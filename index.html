@@ -1,98 +1,591 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Me</title>
-
+    <title>House Morphology</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #222;
-            line-height: 1.6;
+        :root {
+            --bg-dark: #0a0a0a;
+            --cream: #f5f0e8;
+            --accent: #c9a959;
+            --muted: #6b6b6b;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 60px auto;
-            background: #ffffff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-        }
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        header {
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
+    body {
+        min-height: 100vh;
+        background: var(--bg-dark);
+        font-family: 'Cormorant Garamond', serif;
+        color: var(--cream);
+        overflow-x: hidden;
+    }
 
-        header img {
-            width: 180px;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 50%;
-        }
+    .container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+    }
 
-        h1 {
-            margin: 0;
-            font-size: 2.4rem;
-        }
+    /* Grain overlay */
+    .grain {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0.04;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        z-index: 1000;
+    }
 
-        h2 {
-            margin-top: 40px;
-            font-size: 1.6rem;
-        }
+    header {
+        position: absolute;
+        top: 2rem;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 10;
+    }
 
-        p {
-            font-size: 1.05rem;
-            margin-top: 16px;
-        }
+    h1 {
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        font-weight: 300;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: var(--cream);
+        opacity: 0;
+        animation: fadeIn 1.5s ease-out 0.3s forwards;
+    }
 
-        footer {
-            margin-top: 60px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #777;
-        }
-    </style>
+    .subtitle {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.7rem;
+        letter-spacing: 0.3em;
+        color: var(--muted);
+        margin-top: 0.5rem;
+        opacity: 0;
+        animation: fadeIn 1.5s ease-out 0.6s forwards;
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; }
+    }
+
+    .house-stage {
+        position: relative;
+        width: min(80vw, 600px);
+        height: min(80vw, 600px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .house-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .house-container:hover {
+        transform: scale(1.02);
+    }
+
+    .house-container:active {
+        transform: scale(0.98);
+    }
+
+    .house-svg {
+        width: 100%;
+        height: 100%;
+        filter: drop-shadow(0 30px 60px rgba(0,0,0,0.5));
+    }
+
+    /* House paths with smooth transitions */
+    .house-element {
+        transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .roof {
+        fill: var(--accent);
+    }
+
+    .walls {
+        fill: var(--cream);
+    }
+
+    .door {
+        fill: var(--bg-dark);
+    }
+
+    .window {
+        fill: var(--accent);
+        opacity: 0.8;
+    }
+
+    .chimney {
+        fill: var(--muted);
+    }
+
+    .detail {
+        fill: none;
+        stroke: var(--muted);
+        stroke-width: 1;
+    }
+
+    /* Ground line */
+    .ground {
+        position: absolute;
+        bottom: 15%;
+        left: -20%;
+        width: 140%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--muted), transparent);
+        opacity: 0.3;
+    }
+
+    /* Info panel */
+    .info-panel {
+        position: absolute;
+        bottom: 3rem;
+        left: 50%;
+        transform: translateX(-50%);
+        text-align: center;
+        z-index: 10;
+    }
+
+    .house-name {
+        font-size: clamp(1.2rem, 3vw, 2rem);
+        font-weight: 600;
+        color: var(--accent);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        transition: opacity 0.4s ease;
+    }
+
+    .house-description {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.65rem;
+        color: var(--muted);
+        letter-spacing: 0.15em;
+        max-width: 400px;
+        line-height: 1.8;
+    }
+
+    .counter {
+        font-family: 'Space Mono', monospace;
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-top: 1.5rem;
+        letter-spacing: 0.2em;
+    }
+
+    /* Interaction hints */
+    .hint {
+        position: absolute;
+        right: 2rem;
+        top: 50%;
+        transform: translateY(-50%);
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        font-family: 'Space Mono', monospace;
+        font-size: 0.6rem;
+        color: var(--muted);
+        letter-spacing: 0.3em;
+        opacity: 0.5;
+    }
+
+    /* Decorative elements */
+    .corner-decoration {
+        position: fixed;
+        width: 100px;
+        height: 100px;
+        border: 1px solid var(--muted);
+        opacity: 0.2;
+    }
+
+    .corner-decoration.top-left {
+        top: 2rem;
+        left: 2rem;
+        border-right: none;
+        border-bottom: none;
+    }
+
+    .corner-decoration.bottom-right {
+        bottom: 2rem;
+        right: 2rem;
+        border-left: none;
+        border-top: none;
+    }
+
+    /* Pulse animation for click hint */
+    @keyframes pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.7; }
+    }
+
+    .click-hint {
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Sky elements that change with house */
+    .sky-element {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: var(--cream);
+        border-radius: 50%;
+        opacity: 0.3;
+        transition: all 0.8s ease;
+    }
+</style>
+```
+
 </head>
-
 <body>
-    <div class="container">
-        <header>
-            <!-- Replace "me.jpg" with your actual photo file name -->
-            <img src="me.JPG" alt="Photo of me">
+    <div class="grain"></div>
+    <div class="corner-decoration top-left"></div>
+    <div class="corner-decoration bottom-right"></div>
 
-            <div>
-                <h1>Matthew Calvey</h1>
-                <p>Architect | Designer | Lifelong Learner</p>
-            </div>
-        </header>
+```
+<div class="container">
+    <header>
+        <h1>House Morphology</h1>
+        <p class="subtitle">Click to Transform</p>
+    </header>
 
-        <section>
-            <h2>About Me</h2>
-            <p>
-                I am an architect with a passion for thoughtful, high-performance design
-                and the intersection of technology, sustainability, and the built environment.
-                My work focuses on creating durable, efficient, and meaningful spaces that
-                serve both people and place.
-            </p>
-
-            <p>
-                Outside of work, I enjoy staying active, exploring new places, and continuously
-                learning—whether that means refining digital workflows, traveling, or pushing
-                personal fitness goals.
-            </p>
-        </section>
-
-        <footer>
-            © 2026 Your Name
-        </footer>
+    <div class="house-stage">
+        <div class="ground"></div>
+        
+        <!-- Sky elements -->
+        <div class="sky-element" style="top: 10%; left: 20%;"></div>
+        <div class="sky-element" style="top: 15%; left: 70%;"></div>
+        <div class="sky-element" style="top: 25%; left: 40%;"></div>
+        <div class="sky-element" style="top: 8%; left: 55%;"></div>
+        <div class="sky-element" style="top: 20%; left: 85%;"></div>
+        
+        <div class="house-container" id="houseContainer">
+            <svg class="house-svg" viewBox="0 0 400 400" id="houseSvg">
+                <!-- Chimney -->
+                <rect class="house-element chimney" id="chimney" x="280" y="80" width="25" height="60"/>
+                
+                <!-- Roof -->
+                <polygon class="house-element roof" id="roof" points="200,60 320,140 80,140"/>
+                
+                <!-- Walls -->
+                <rect class="house-element walls" id="walls" x="90" y="140" width="220" height="160"/>
+                
+                <!-- Door -->
+                <rect class="house-element door" id="door" x="175" y="220" width="50" height="80"/>
+                
+                <!-- Door handle -->
+                <circle class="house-element" id="doorHandle" cx="215" cy="260" r="4" fill="#c9a959"/>
+                
+                <!-- Windows -->
+                <rect class="house-element window" id="windowLeft" x="110" y="170" width="50" height="50"/>
+                <rect class="house-element window" id="windowRight" x="240" y="170" width="50" height="50"/>
+                
+                <!-- Window crosses -->
+                <line class="house-element detail" id="windowCrossL1" x1="135" y1="170" x2="135" y2="220"/>
+                <line class="house-element detail" id="windowCrossL2" x1="110" y1="195" x2="160" y2="195"/>
+                <line class="house-element detail" id="windowCrossR1" x1="265" y1="170" x2="265" y2="220"/>
+                <line class="house-element detail" id="windowCrossR2" x1="240" y1="195" x2="290" y2="195"/>
+                
+                <!-- Roof detail -->
+                <line class="house-element detail" id="roofDetail" x1="200" y1="60" x2="200" y2="140" stroke-width="2"/>
+            </svg>
+        </div>
     </div>
+
+    <div class="hint click-hint">CLICK TO TRANSFORM</div>
+
+    <div class="info-panel">
+        <div class="house-name" id="houseName">Colonial</div>
+        <p class="house-description" id="houseDescription">Classic American colonial architecture featuring symmetrical design and central entry</p>
+        <p class="counter"><span id="currentIndex">1</span> / <span id="totalCount">8</span></p>
+    </div>
+</div>
+
+<script>
+    const houses = [
+        {
+            name: "Colonial",
+            description: "Classic American colonial architecture featuring symmetrical design and central entry",
+            colors: { roof: "#c9a959", walls: "#f5f0e8", accent: "#c9a959" },
+            roof: "200,60 320,140 80,140",
+            walls: { x: 90, y: 140, width: 220, height: 160 },
+            door: { x: 175, y: 220, width: 50, height: 80, rx: 0 },
+            doorHandle: { cx: 215, cy: 260 },
+            windowLeft: { x: 110, y: 170, width: 50, height: 50, rx: 0 },
+            windowRight: { x: 240, y: 170, width: 50, height: 50, rx: 0 },
+            chimney: { x: 280, y: 80, width: 25, height: 60 },
+            showChimney: true
+        },
+        {
+            name: "Modern",
+            description: "Contemporary flat-roof design with expansive glass and clean geometric lines",
+            colors: { roof: "#2a2a2a", walls: "#e8e8e8", accent: "#4a90a4" },
+            roof: "60,120 340,120 340,140 60,140",
+            walls: { x: 60, y: 140, width: 280, height: 160 },
+            door: { x: 80, y: 200, width: 40, height: 100, rx: 0 },
+            doorHandle: { cx: 112, cy: 250 },
+            windowLeft: { x: 140, y: 160, width: 180, height: 80, rx: 0 },
+            windowRight: { x: 140, y: 250, width: 80, height: 40, rx: 0 },
+            chimney: { x: 300, y: 100, width: 15, height: 20 },
+            showChimney: false
+        },
+        {
+            name: "Victorian",
+            description: "Ornate 19th century style with steep gables and decorative trim details",
+            colors: { roof: "#5c4033", walls: "#d4c4b0", accent: "#8b4513" },
+            roof: "200,40 340,160 60,160",
+            walls: { x: 70, y: 160, width: 260, height: 140 },
+            door: { x: 175, y: 210, width: 50, height: 90, rx: 25 },
+            doorHandle: { cx: 215, cy: 260 },
+            windowLeft: { x: 95, y: 180, width: 55, height: 70, rx: 27 },
+            windowRight: { x: 250, y: 180, width: 55, height: 70, rx: 27 },
+            chimney: { x: 290, y: 60, width: 30, height: 100 },
+            showChimney: true
+        },
+        {
+            name: "A-Frame",
+            description: "Mid-century triangular structure maximizing interior volume with dramatic rooflines",
+            colors: { roof: "#3d3d3d", walls: "#c9b896", accent: "#8fbc8f" },
+            roof: "200,50 350,300 50,300",
+            walls: { x: 120, y: 200, width: 160, height: 100 },
+            door: { x: 175, y: 220, width: 50, height: 80, rx: 0 },
+            doorHandle: { cx: 215, cy: 260 },
+            windowLeft: { x: 160, y: 120, width: 80, height: 60, rx: 0 },
+            windowRight: { x: 140, y: 200, width: 30, height: 30, rx: 0 },
+            chimney: { x: 195, y: 30, width: 10, height: 20 },
+            showChimney: false
+        },
+        {
+            name: "Mediterranean",
+            description: "Sun-soaked villa style with terracotta roofs and stucco walls",
+            colors: { roof: "#b85c38", walls: "#faf3e0", accent: "#daa520" },
+            roof: "200,70 330,130 330,150 70,150 70,130",
+            walls: { x: 80, y: 150, width: 240, height: 150 },
+            door: { x: 170, y: 200, width: 60, height: 100, rx: 30 },
+            doorHandle: { cx: 218, cy: 260 },
+            windowLeft: { x: 100, y: 175, width: 50, height: 60, rx: 25 },
+            windowRight: { x: 250, y: 175, width: 50, height: 60, rx: 25 },
+            chimney: { x: 100, y: 90, width: 20, height: 60 },
+            showChimney: true
+        },
+        {
+            name: "Japanese",
+            description: "Traditional minka-inspired design with curved eaves and natural harmony",
+            colors: { roof: "#1a1a2e", walls: "#f0e6d3", accent: "#8b0000" },
+            roof: "200,80 360,150 350,160 50,160 40,150",
+            walls: { x: 60, y: 160, width: 280, height: 140 },
+            door: { x: 165, y: 200, width: 70, height: 100, rx: 0 },
+            doorHandle: { cx: 200, cy: 250 },
+            windowLeft: { x: 80, y: 180, width: 70, height: 50, rx: 0 },
+            windowRight: { x: 250, y: 180, width: 70, height: 50, rx: 0 },
+            chimney: { x: 190, y: 60, width: 20, height: 20 },
+            showChimney: false
+        },
+        {
+            name: "Tudor",
+            description: "English medieval revival featuring half-timbering and steep cross-gables",
+            colors: { roof: "#4a4a4a", walls: "#f5f5dc", accent: "#4a3728" },
+            roof: "200,50 320,140 280,140 280,100 260,100 260,140 80,140",
+            walls: { x: 90, y: 140, width: 220, height: 160 },
+            door: { x: 175, y: 210, width: 50, height: 90, rx: 25 },
+            doorHandle: { cx: 215, cy: 260 },
+            windowLeft: { x: 105, y: 165, width: 55, height: 65, rx: 0 },
+            windowRight: { x: 240, y: 165, width: 55, height: 65, rx: 0 },
+            chimney: { x: 260, y: 70, width: 35, height: 70 },
+            showChimney: true
+        },
+        {
+            name: "Bauhaus",
+            description: "German modernist cube form emphasizing function and industrial materials",
+            colors: { roof: "#f5f5f5", walls: "#ffffff", accent: "#ff4444" },
+            roof: "70,130 330,130 330,145 70,145",
+            walls: { x: 70, y: 145, width: 260, height: 155 },
+            door: { x: 260, y: 200, width: 50, height: 100, rx: 0 },
+            doorHandle: { cx: 275, cy: 250 },
+            windowLeft: { x: 90, y: 165, width: 150, height: 60, rx: 0 },
+            windowRight: { x: 90, y: 245, width: 60, height: 40, rx: 0 },
+            chimney: { x: 300, y: 110, width: 20, height: 20 },
+            showChimney: false
+        }
+    ];
+
+    let currentIndex = 0;
+    const houseContainer = document.getElementById('houseContainer');
+    const houseName = document.getElementById('houseName');
+    const houseDescription = document.getElementById('houseDescription');
+    const currentIndexEl = document.getElementById('currentIndex');
+    const totalCountEl = document.getElementById('totalCount');
+
+    totalCountEl.textContent = houses.length;
+
+    function updateHouse(index) {
+        const house = houses[index];
+        
+        // Update colors
+        document.documentElement.style.setProperty('--accent', house.colors.accent);
+        
+        // Update roof
+        const roof = document.getElementById('roof');
+        roof.setAttribute('points', house.roof);
+        roof.style.fill = house.colors.roof;
+
+        // Update walls
+        const walls = document.getElementById('walls');
+        walls.setAttribute('x', house.walls.x);
+        walls.setAttribute('y', house.walls.y);
+        walls.setAttribute('width', house.walls.width);
+        walls.setAttribute('height', house.walls.height);
+        walls.style.fill = house.colors.walls;
+
+        // Update door
+        const door = document.getElementById('door');
+        door.setAttribute('x', house.door.x);
+        door.setAttribute('y', house.door.y);
+        door.setAttribute('width', house.door.width);
+        door.setAttribute('height', house.door.height);
+        door.setAttribute('rx', house.door.rx);
+
+        // Update door handle
+        const doorHandle = document.getElementById('doorHandle');
+        doorHandle.setAttribute('cx', house.doorHandle.cx);
+        doorHandle.setAttribute('cy', house.doorHandle.cy);
+        doorHandle.style.fill = house.colors.accent;
+
+        // Update windows
+        const windowLeft = document.getElementById('windowLeft');
+        windowLeft.setAttribute('x', house.windowLeft.x);
+        windowLeft.setAttribute('y', house.windowLeft.y);
+        windowLeft.setAttribute('width', house.windowLeft.width);
+        windowLeft.setAttribute('height', house.windowLeft.height);
+        windowLeft.setAttribute('rx', house.windowLeft.rx);
+        windowLeft.style.fill = house.colors.accent;
+
+        const windowRight = document.getElementById('windowRight');
+        windowRight.setAttribute('x', house.windowRight.x);
+        windowRight.setAttribute('y', house.windowRight.y);
+        windowRight.setAttribute('width', house.windowRight.width);
+        windowRight.setAttribute('height', house.windowRight.height);
+        windowRight.setAttribute('rx', house.windowRight.rx);
+        windowRight.style.fill = house.colors.accent;
+
+        // Update chimney
+        const chimney = document.getElementById('chimney');
+        chimney.setAttribute('x', house.chimney.x);
+        chimney.setAttribute('y', house.chimney.y);
+        chimney.setAttribute('width', house.chimney.width);
+        chimney.setAttribute('height', house.chimney.height);
+        chimney.style.opacity = house.showChimney ? 1 : 0;
+
+        // Update window crosses based on window positions
+        const wl = house.windowLeft;
+        const wr = house.windowRight;
+        
+        document.getElementById('windowCrossL1').setAttribute('x1', wl.x + wl.width/2);
+        document.getElementById('windowCrossL1').setAttribute('x2', wl.x + wl.width/2);
+        document.getElementById('windowCrossL1').setAttribute('y1', wl.y);
+        document.getElementById('windowCrossL1').setAttribute('y2', wl.y + wl.height);
+        
+        document.getElementById('windowCrossL2').setAttribute('x1', wl.x);
+        document.getElementById('windowCrossL2').setAttribute('x2', wl.x + wl.width);
+        document.getElementById('windowCrossL2').setAttribute('y1', wl.y + wl.height/2);
+        document.getElementById('windowCrossL2').setAttribute('y2', wl.y + wl.height/2);
+        
+        document.getElementById('windowCrossR1').setAttribute('x1', wr.x + wr.width/2);
+        document.getElementById('windowCrossR1').setAttribute('x2', wr.x + wr.width/2);
+        document.getElementById('windowCrossR1').setAttribute('y1', wr.y);
+        document.getElementById('windowCrossR1').setAttribute('y2', wr.y + wr.height);
+        
+        document.getElementById('windowCrossR2').setAttribute('x1', wr.x);
+        document.getElementById('windowCrossR2').setAttribute('x2', wr.x + wr.width);
+        document.getElementById('windowCrossR2').setAttribute('y1', wr.y + wr.height/2);
+        document.getElementById('windowCrossR2').setAttribute('y2', wr.y + wr.height/2);
+
+        // Hide window crosses for certain styles
+        const hideCrosses = ['Modern', 'Bauhaus', 'Japanese'].includes(house.name);
+        document.querySelectorAll('.detail').forEach(el => {
+            el.style.opacity = hideCrosses ? 0 : 1;
+        });
+
+        // Update roof detail
+        const roofDetail = document.getElementById('roofDetail');
+        roofDetail.style.opacity = ['Colonial', 'Victorian', 'A-Frame'].includes(house.name) ? 1 : 0;
+
+        // Update info
+        houseName.textContent = house.name;
+        houseName.style.color = house.colors.accent;
+        houseDescription.textContent = house.description;
+        currentIndexEl.textContent = index + 1;
+
+        // Animate sky elements
+        document.querySelectorAll('.sky-element').forEach((el, i) => {
+            el.style.opacity = 0.2 + Math.random() * 0.3;
+            el.style.transform = `scale(${0.8 + Math.random() * 0.5})`;
+        });
+    }
+
+    function nextHouse() {
+        currentIndex = (currentIndex + 1) % houses.length;
+        updateHouse(currentIndex);
+    }
+
+    // Click to transform
+    houseContainer.addEventListener('click', nextHouse);
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') {
+            nextHouse();
+        } else if (e.key === 'ArrowLeft') {
+            currentIndex = (currentIndex - 1 + houses.length) % houses.length;
+            updateHouse(currentIndex);
+        }
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    houseContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+    });
+
+    houseContainer.addEventListener('touchend', (e) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > 50) {
+            if (diff > 0) {
+                nextHouse();
+            } else {
+                currentIndex = (currentIndex - 1 + houses.length) % houses.length;
+                updateHouse(currentIndex);
+            }
+        }
+    });
+
+    // Initialize
+    updateHouse(0);
+</script>
+```
+
 </body>
 </html>
