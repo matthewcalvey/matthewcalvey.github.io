@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>STACK - CALVEY INC.</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f0f13;
+            --bg-lighter: #1a1a22;
+            --perfect: #ffd93d;
+            --text: #ffffff;
+            --text-dim: #5a5a6e;
+            --text-quote: #9a9ab0;
+        }
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+        user-select: none;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        background: var(--bg);
+        font-family: 'IBM Plex Mono', monospace;
+    }
+
+    #gameContainer {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lighter) 100%);
+    }
+
+    /* Subtle grid pattern */
+    #gameContainer::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+    }
+
+    /* Score display */
+    #scoreDisplay {
+        position: absolute;
+        top: env(safe-area-inset-top, 20px);
+        left: 0;
+        right: 0;
+        text-align: center;
+        z-index: 100;
+        padding-top: 24px;
+    }
+
+    .score-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.35em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+    }
+
+    .score-value {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 80px;
+        color: var(--text);
+        line-height: 1;
+        text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+    }
+
+    .high-score {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-dim);
+        margin-top: 6px;
+        letter-spacing: 0.1em;
+    }
+
+    /* Perfect indicator */
+    #perfectIndicator {
+        position: absolute;
+        top: 48%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 56px;
+        letter-spacing: 0.05em;
+        color: var(--perfect);
+        text-shadow: 
+            0 0 40px var(--perfect),
+            0 0 80px rgba(255, 217, 61, 0.5);
+        opacity: 0;
+        z-index: 200;
+        pointer-events: none;
+    }
+
+    #perfectIndicator.show {
+        animation: perfectPop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes perfectPop {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+        30% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-40px); }
+    }
+
+    /* Combo display */
+    #comboDisplay {
+        position: absolute;
+        top: 43%;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.25em;
+        color: var(--perfect);
+        text-shadow: 0 0 20px rgba(255, 217, 61, 0.6);
+        opacity: 0;
+        z-index: 200;
+        pointer-events: none;
+        transition: opacity 0.2s;
+    }
+
+    #comboDisplay.show {
+        opacity: 1;
+    }
+
+    /* Game canvas */
+    #gameCanvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Controls hint */
+    #tapHint {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 50px);
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.25em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 1; }
+    }
+
+    /* Start screen */
+    #startScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: var(--bg);
+    }
+
+    #startScreen.hidden {
+        display: none;
+    }
+
+    .brand-logo {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.4em;
+        color: var(--text-dim);
+        margin-bottom: 20px;
+        padding: 8px 16px;
+        border: 1px solid var(--text-dim);
+        border-radius: 4px;
+    }
+
+    .game-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(90px, 28vw, 160px);
+        color: var(--text);
+        letter-spacing: 0.08em;
+        line-height: 1;
+        margin-bottom: 8px;
+        text-shadow: 0 6px 40px rgba(0,0,0,0.4);
+    }
+
+    .game-subtitle {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.5em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 50px;
+    }
+
+    .start-demo {
+        width: 140px;
+        height: 100px;
+        margin-bottom: 50px;
+        position: relative;
+    }
+
+    .demo-block {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+        height: 24px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 7px;
+        font-weight: 600;
+        letter-spacing: 0.15em;
+        color: rgba(255,255,255,0.9);
+        text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .demo-block:nth-child(1) { 
+        width: 120px; 
+        bottom: 0; 
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    .demo-block:nth-child(2) { 
+        width: 110px; 
+        bottom: 26px; 
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
+    }
+    .demo-block:nth-child(3) { 
+        width: 100px; 
+        bottom: 52px; 
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        animation: demoSlide 1.8s ease-in-out infinite;
+    }
+
+    @keyframes demoSlide {
+        0%, 100% { transform: translateX(-90%); }
+        50% { transform: translateX(-10%); }
+    }
+
+    .tap-start {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.35em;
+        color: var(--text);
+        text-transform: uppercase;
+    }
+
+    /* Game over screen */
+    #gameOverScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: rgba(15, 15, 19, 0.97);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+        padding: 30px;
+    }
+
+    #gameOverScreen.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .game-over-label {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.4em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .final-score {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: clamp(80px, 25vw, 120px);
+        color: var(--text);
+        line-height: 1;
+        margin-bottom: 6px;
+        text-shadow: 0 4px 30px rgba(0,0,0,0.3);
+    }
+
+    .score-stats {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-dim);
+        text-align: center;
+        line-height: 2;
+        margin-bottom: 24px;
+        letter-spacing: 0.05em;
+    }
+
+    .score-stats span {
+        color: var(--text);
+    }
+
+    .new-record {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.25em;
+        color: var(--perfect);
+        border: 2px solid var(--perfect);
+        padding: 12px 28px;
+        border-radius: 6px;
+        margin-bottom: 28px;
+        opacity: 0;
+        text-shadow: 0 0 20px var(--perfect);
+    }
+
+    .new-record.visible {
+        opacity: 1;
+        animation: recordGlow 1.5s ease-in-out infinite;
+    }
+
+    @keyframes recordGlow {
+        0%, 100% { box-shadow: 0 0 0 0 rgba(255, 217, 61, 0.4); }
+        50% { box-shadow: 0 0 20px 5px rgba(255, 217, 61, 0.2); }
+    }
+
+    /* Quote section */
+    .quote-section {
+        max-width: 320px;
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 0 10px;
+    }
+
+    .quote-text {
+        font-family: 'Playfair Display', serif;
+        font-style: italic;
+        font-size: 16px;
+        line-height: 1.6;
+        color: var(--text-quote);
+        margin-bottom: 12px;
+    }
+
+    .quote-author {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+    }
+
+    .tap-restart {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.35em;
+        color: var(--text);
+        text-transform: uppercase;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Sound toggle */
+    #soundToggle {
+        position: absolute;
+        top: env(safe-area-inset-top, 20px);
+        right: 20px;
+        padding-top: 24px;
+        z-index: 300;
+    }
+
+    #soundToggle button {
+        width: 48px;
+        height: 48px;
+        border: 2px solid var(--text-dim);
+        border-radius: 50%;
+        background: rgba(15, 15, 19, 0.6);
+        backdrop-filter: blur(10px);
+        color: var(--text);
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    #soundToggle button:active {
+        transform: scale(0.9);
+        border-color: var(--text);
+    }
+
+    #soundToggle button.off {
+        color: var(--text-dim);
+        border-color: rgba(90, 90, 110, 0.5);
+    }
+</style>
+```
+
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+
+```
+    <!-- Score -->
+    <div id="scoreDisplay">
+        <div class="score-label">Score</div>
+        <div class="score-value" id="scoreValue">0</div>
+        <div class="high-score">Best: <span id="highScoreValue">0</span></div>
+    </div>
+
+    <!-- Perfect indicator -->
+    <div id="perfectIndicator">PERFECT</div>
+    
+    <!-- Combo display -->
+    <div id="comboDisplay">×1 COMBO</div>
+
+    <!-- Tap hint -->
+    <div id="tapHint">Tap to place</div>
+
+    <!-- Sound toggle -->
+    <div id="soundToggle">
+        <button id="soundBtn">♪</button>
+    </div>
+
+    <!-- Start screen -->
+    <div id="startScreen">
+        <div class="brand-logo">CALVEY INC.</div>
+        <h1 class="game-title">STACK</h1>
+        <p class="game-subtitle">Build your empire</p>
+        
+        <div class="start-demo">
+            <div class="demo-block">CALVEY INC.</div>
+            <div class="demo-block">CALVEY INC.</div>
+            <div class="demo-block">CALVEY INC.</div>
+        </div>
+        
+        <p class="tap-start">Tap to Play</p>
+    </div>
+
+    <!-- Game over screen -->
+    <div id="gameOverScreen">
+        <div class="game-over-label">Final Score</div>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="score-stats">
+            Perfects: <span id="perfectCount">0</span> · Best Combo: <span id="bestCombo">0</span>
+        </div>
+        <div class="new-record" id="newRecordBadge">★ NEW RECORD ★</div>
+        
+        <div class="quote-section">
+            <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
+            <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
+        </div>
+        
+        <p class="tap-restart">Tap to Retry</p>
+    </div>
+</div>
+
+<script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    
+    const CONFIG = {
+        BLOCK_HEIGHT: 32,
+        INITIAL_WIDTH: 220,
+        MIN_WIDTH: 25,
+        INITIAL_SPEED: 3.2,
+        SPEED_INCREMENT: 0.12,
+        MAX_SPEED: 11,
+        PERFECT_TOLERANCE: 6,
+        GROW_AMOUNT: 4,
+        MAX_GROW: 12,
+        CAMERA_LERP: 0.12,
+        STACK_VISIBLE: 10,
+        BORDER_RADIUS: 10
+    };
+
+    // Encouraging quotes
+    const QUOTES = [
+        { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+        { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+        { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+        { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+        { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+        { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
+        { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
+        { text: "Your limitation—it's only your imagination.", author: "Unknown" },
+        { text: "Great things never come from comfort zones.", author: "Unknown" },
+        { text: "Dream it. Wish it. Do it.", author: "Unknown" },
+        { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
+        { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
+        { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
+        { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
+        { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray" },
+        { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
+        { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
+        { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" }
+    ];
+
+    // Beautiful gradient pairs for blocks
+    const GRADIENTS = [
+        ['#667eea', '#764ba2'], // Purple
+        ['#f093fb', '#f5576c'], // Pink
+        ['#4facfe', '#00f2fe'], // Cyan
+        ['#43e97b', '#38f9d7'], // Green
+        ['#fa709a', '#fee140'], // Sunset
+        ['#a8edea', '#fed6e3'], // Soft
+        ['#ff9a9e', '#fecfef'], // Rose
+        ['#ffecd2', '#fcb69f'], // Peach
+        ['#667eea', '#764ba2'], // Purple
+        ['#6a11cb', '#2575fc'], // Royal
+        ['#f5af19', '#f12711'], // Fire
+        ['#00c6fb', '#005bea'], // Ocean
+        ['#b721ff', '#21d4fd'], // Electric
+        ['#c471f5', '#fa71cd'], // Candy
+        ['#48c6ef', '#6f86d6'], // Sky
+    ];
+
+    // ============================================================
+    // GAME STATE
+    // ============================================================
+    
+    const state = {
+        playing: false,
+        score: 0,
+        highScore: parseInt(localStorage.getItem('calveyStackHighScore') || '0'),
+        combo: 0,
+        maxCombo: 0,
+        perfects: 0,
+        current: null,
+        stack: [],
+        falling: [],
+        cameraY: 0,
+        targetCameraY: 0,
+        direction: 1,
+        speed: CONFIG.INITIAL_SPEED,
+        soundEnabled: true
+    };
+
+    // ============================================================
+    // CANVAS SETUP
+    // ============================================================
+    
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, centerX, baseY, dpr;
+
+    function resize() {
+        dpr = window.devicePixelRatio || 1;
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.scale(dpr, dpr);
+        
+        centerX = width / 2;
+        baseY = height * 0.72;
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+
+    // ============================================================
+    // AUDIO
+    // ============================================================
+    
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playSound(type) {
+        if (!state.soundEnabled || !audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        const now = audioCtx.currentTime;
+        
+        switch(type) {
+            case 'place':
+                const pitch = 260 + (state.stack.length * 18);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(pitch, now);
+                osc.frequency.exponentialRampToValueAtTime(pitch * 1.15, now + 0.08);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+                break;
+                
+            case 'perfect':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523, now);
+                osc.frequency.setValueAtTime(659, now + 0.07);
+                osc.frequency.setValueAtTime(784, now + 0.14);
+                osc.frequency.setValueAtTime(1047, now + 0.21);
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+                break;
+                
+            case 'fail':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+                break;
+        }
+    }
+
+    // ============================================================
+    // DRAWING UTILITIES
+    // ============================================================
+    
+    function roundRect(x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    function getGradient(index, x, y, w, h) {
+        const colors = GRADIENTS[index % GRADIENTS.length];
+        const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+        gradient.addColorStop(0, colors[0]);
+        gradient.addColorStop(1, colors[1]);
+        return gradient;
+    }
+
+    function drawBlock(x, y, w, h, colorIndex, isMoving = false) {
+        const left = x - w / 2;
+        const radius = CONFIG.BORDER_RADIUS;
+        
+        // Shadow
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
+        ctx.shadowBlur = 20;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 8;
+        
+        roundRect(left, y, w, h, radius);
+        ctx.fillStyle = getGradient(colorIndex, left, y, w, h);
+        ctx.fill();
+        ctx.restore();
+        
+        // Main block
+        roundRect(left, y, w, h, radius);
+        ctx.fillStyle = getGradient(colorIndex, left, y, w, h);
+        ctx.fill();
+        
+        // Top highlight
+        ctx.save();
+        ctx.globalAlpha = 0.25;
+        roundRect(left, y, w, h * 0.4, radius);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.restore();
+        
+        // Bottom edge (subtle)
+        ctx.save();
+        ctx.globalAlpha = 0.15;
+        roundRect(left, y + h * 0.7, w, h * 0.3, radius);
+        ctx.fillStyle = '#000000';
+        ctx.fill();
+        ctx.restore();
+        
+        // CALVEY INC. text
+        if (w > 60) {
+            ctx.save();
+            const fontSize = Math.min(9, w * 0.045);
+            ctx.font = `600 ${fontSize}px 'IBM Plex Mono', monospace`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            // Text shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.fillText('CALVEY INC.', x + 1, y + h / 2 + 1);
+            
+            // Main text
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.fillText('CALVEY INC.', x, y + h / 2);
+            ctx.restore();
+        }
+        
+        // Glow effect for moving block
+        if (isMoving) {
+            ctx.save();
+            ctx.shadowColor = GRADIENTS[colorIndex % GRADIENTS.length][0];
+            ctx.shadowBlur = 25;
+            roundRect(left, y, w, h, radius);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
+        }
+    }
+
+    // ============================================================
+    // BLOCK MANAGEMENT
+    // ============================================================
+    
+    function createBlock(y, blockWidth, fromLeft = true) {
+        const x = fromLeft ? -blockWidth / 2 : width + blockWidth / 2;
+        return {
+            x: x,
+            y: y,
+            width: blockWidth,
+            height: CONFIG.BLOCK_HEIGHT,
+            placed: false
+        };
+    }
+
+    function spawnNextBlock() {
+        const lastBlock = state.stack[state.stack.length - 1];
+        const newY = lastBlock.y - CONFIG.BLOCK_HEIGHT - 4; // Gap between blocks
+        const fromLeft = state.direction > 0;
+        
+        state.current = createBlock(newY, lastBlock.width, !fromLeft);
+        state.direction = fromLeft ? -1 : 1;
+    }
+
+    function placeBlock() {
+        if (!state.current || state.current.placed) return;
+        
+        const current = state.current;
+        const last = state.stack[state.stack.length - 1];
+        
+        const currentLeft = current.x - current.width / 2;
+        const currentRight = current.x + current.width / 2;
+        const lastLeft = last.x - last.width / 2;
+        const lastRight = last.x + last.width / 2;
+        
+        const overlapLeft = Math.max(currentLeft, lastLeft);
+        const overlapRight = Math.min(currentRight, lastRight);
+        const overlapWidth = overlapRight - overlapLeft;
+        
+        if (overlapWidth <= 0) {
+            createFallingPiece(current.x, current.y, current.width, state.stack.length);
+            gameOver();
+            return;
+        }
+        
+        const offset = Math.abs(current.x - last.x);
+        const isPerfect = offset <= CONFIG.PERFECT_TOLERANCE;
+        
+        if (isPerfect) {
+            state.combo++;
+            state.perfects++;
+            
+            const growAmount = Math.min(state.combo * CONFIG.GROW_AMOUNT, CONFIG.MAX_GROW);
+            current.width = Math.min(last.width + growAmount, CONFIG.INITIAL_WIDTH);
+            current.x = last.x;
+            
+            showPerfect();
+            playSound('perfect');
+            
+            if (state.combo > state.maxCombo) {
+                state.maxCombo = state.combo;
+            }
+        } else {
+            state.combo = 0;
+            
+            const cutWidth = current.width - overlapWidth;
+            if (cutWidth > 3) {
+                const cutX = current.x > last.x ? 
+                    overlapRight + cutWidth / 2 : 
+                    overlapLeft - cutWidth / 2;
+                createFallingPiece(cutX, current.y, cutWidth, state.stack.length);
+            }
+            
+            current.width = overlapWidth;
+            current.x = overlapLeft + overlapWidth / 2;
+            
+            playSound('place');
+        }
+        
+        if (current.width < CONFIG.MIN_WIDTH) {
+            gameOver();
+            return;
+        }
+        
+        current.placed = true;
+        state.stack.push(current);
+        state.score++;
+        
+        state.targetCameraY = Math.max(0, (state.stack.length - CONFIG.STACK_VISIBLE) * (CONFIG.BLOCK_HEIGHT + 4));
+        state.speed = Math.min(CONFIG.INITIAL_SPEED + state.score * CONFIG.SPEED_INCREMENT, CONFIG.MAX_SPEED);
+        
+        updateUI();
+        spawnNextBlock();
+    }
+
+    function createFallingPiece(x, y, pieceWidth, colorIndex) {
+        state.falling.push({
+            x: x,
+            y: y,
+            width: pieceWidth,
+            height: CONFIG.BLOCK_HEIGHT,
+            vy: -2,
+            vx: (x > centerX ? 1 : -1) * (3 + Math.random() * 3),
+            rotation: 0,
+            rotationSpeed: (Math.random() - 0.5) * 0.2,
+            colorIndex: colorIndex
+        });
+    }
+
+    // ============================================================
+    // GAME LOOP
+    // ============================================================
+    
+    function update() {
+        if (!state.playing) return;
+        
+        if (state.current && !state.current.placed) {
+            state.current.x += state.speed * state.direction;
+            
+            const halfWidth = state.current.width / 2;
+            if (state.current.x + halfWidth > width - 10) {
+                state.current.x = width - halfWidth - 10;
+                state.direction = -1;
+            } else if (state.current.x - halfWidth < 10) {
+                state.current.x = halfWidth + 10;
+                state.direction = 1;
+            }
+        }
+        
+        state.cameraY += (state.targetCameraY - state.cameraY) * CONFIG.CAMERA_LERP;
+        
+        state.falling = state.falling.filter(piece => {
+            piece.vy += 0.6;
+            piece.y += piece.vy;
+            piece.x += piece.vx;
+            piece.rotation += piece.rotationSpeed;
+            return piece.y < height + 150;
+        });
+    }
+
+    function render() {
+        ctx.clearRect(0, 0, width, height);
+        
+        // Draw stack
+        state.stack.forEach((block, i) => {
+            const screenY = block.y + state.cameraY;
+            if (screenY > height + CONFIG.BLOCK_HEIGHT || screenY < -CONFIG.BLOCK_HEIGHT * 2) return;
+            drawBlock(block.x, screenY, block.width, block.height, i);
+        });
+        
+        // Draw current block
+        if (state.current && !state.current.placed) {
+            const block = state.current;
+            const screenY = block.y + state.cameraY;
+            drawBlock(block.x, screenY, block.width, block.height, state.stack.length, true);
+        }
+        
+        // Draw falling pieces
+        state.falling.forEach(piece => {
+            ctx.save();
+            const screenY = piece.y + state.cameraY;
+            ctx.translate(piece.x, screenY + piece.height / 2);
+            ctx.rotate(piece.rotation);
+            ctx.globalAlpha = 0.85;
+            
+            // Simplified falling block
+            const gradient = getGradient(piece.colorIndex, -piece.width / 2, -piece.height / 2, piece.width, piece.height);
+            roundRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height, CONFIG.BORDER_RADIUS);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            ctx.restore();
+        });
+    }
+
+    function gameLoop() {
+        update();
+        render();
+        requestAnimationFrame(gameLoop);
+    }
+
+    // ============================================================
+    // UI
+    // ============================================================
+    
+    function updateUI() {
+        document.getElementById('scoreValue').textContent = state.score;
+        document.getElementById('highScoreValue').textContent = state.highScore;
+        
+        const comboEl = document.getElementById('comboDisplay');
+        if (state.combo >= 2) {
+            comboEl.textContent = `×${state.combo} COMBO`;
+            comboEl.classList.add('show');
+        } else {
+            comboEl.classList.remove('show');
+        }
+    }
+
+    function showPerfect() {
+        const el = document.getElementById('perfectIndicator');
+        el.classList.remove('show');
+        void el.offsetWidth;
+        el.classList.add('show');
+    }
+
+    function getRandomQuote() {
+        return QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    }
+
+    // ============================================================
+    // GAME FLOW
+    // ============================================================
+    
+    function startGame() {
+        initAudio();
+        
+        state.playing = true;
+        state.score = 0;
+        state.combo = 0;
+        state.maxCombo = 0;
+        state.perfects = 0;
+        state.speed = CONFIG.INITIAL_SPEED;
+        state.cameraY = 0;
+        state.targetCameraY = 0;
+        state.falling = [];
+        state.direction = 1;
+        
+        state.stack = [{
+            x: centerX,
+            y: baseY,
+            width: CONFIG.INITIAL_WIDTH,
+            height: CONFIG.BLOCK_HEIGHT,
+            placed: true
+        }];
+        
+        spawnNextBlock();
+        updateUI();
+        
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('gameOverScreen').classList.remove('visible');
+        document.getElementById('tapHint').style.display = 'block';
+    }
+
+    function gameOver() {
+        state.playing = false;
+        state.current = null;
+        
+        playSound('fail');
+        
+        const isNewRecord = state.score > state.highScore;
+        if (isNewRecord) {
+            state.highScore = state.score;
+            localStorage.setItem('calveyStackHighScore', state.highScore.toString());
+        }
+        
+        // Set quote
+        const quote = getRandomQuote();
+        document.getElementById('quoteText').textContent = `"${quote.text}"`;
+        document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
+        
+        document.getElementById('finalScore').textContent = state.score;
+        document.getElementById('perfectCount').textContent = state.perfects;
+        document.getElementById('bestCombo').textContent = state.maxCombo;
+        document.getElementById('newRecordBadge').classList.toggle('visible', isNewRecord);
+        
+        document.getElementById('tapHint').style.display = 'none';
+        
+        setTimeout(() => {
+            document.getElementById('gameOverScreen').classList.add('visible');
+        }, 600);
+    }
+
+    // ============================================================
+    // INPUT
+    // ============================================================
+    
+    function handleTap(e) {
+        if (e.target.closest('#soundToggle')) return;
+        if (!state.playing) return;
+        e.preventDefault();
+        placeBlock();
+    }
+
+    document.getElementById('gameContainer').addEventListener('touchstart', handleTap);
+    document.getElementById('gameContainer').addEventListener('mousedown', handleTap);
+
+    document.getElementById('startScreen').addEventListener('click', startGame);
+    document.getElementById('startScreen').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    document.getElementById('gameOverScreen').addEventListener('click', startGame);
+    document.getElementById('gameOverScreen').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    document.getElementById('soundBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        state.soundEnabled = !state.soundEnabled;
+        e.target.classList.toggle('off', !state.soundEnabled);
+        e.target.textContent = state.soundEnabled ? '♪' : '✕';
+    });
+
+    document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    
+    document.getElementById('highScoreValue').textContent = state.highScore;
+    gameLoop();
+</script>
+```
+
+</body>
+</html>
