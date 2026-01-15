@@ -277,7 +277,7 @@
         text-transform: uppercase;
     }
 
-    /* Game over screen */
+    /* Game over screen - FIXED CENTERING */
     #gameOverScreen {
         position: absolute;
         top: 0;
@@ -293,12 +293,38 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.4s;
-        padding: 30px;
+        padding: 20px;
+        overflow-y: auto;
     }
 
     #gameOverScreen.visible {
         opacity: 1;
         pointer-events: auto;
+    }
+
+    .game-over-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        width: 100%;
+        max-width: 360px;
+    }
+
+    /* Tower graphic */
+    .tower-graphic {
+        position: relative;
+        width: 100%;
+        height: 120px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .tower-graphic canvas {
+        max-width: 200px;
     }
 
     .game-over-label {
@@ -312,7 +338,7 @@
 
     .final-score {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(80px, 25vw, 120px);
+        font-size: clamp(70px, 22vw, 110px);
         color: var(--text);
         line-height: 1;
         margin-bottom: 6px;
@@ -325,7 +351,7 @@
         color: var(--text-dim);
         text-align: center;
         line-height: 2;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         letter-spacing: 0.05em;
     }
 
@@ -341,7 +367,7 @@
         border: 2px solid var(--perfect);
         padding: 12px 28px;
         border-radius: 6px;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
         opacity: 0;
         text-shadow: 0 0 20px var(--perfect);
     }
@@ -358,17 +384,18 @@
 
     /* Quote section */
     .quote-section {
+        width: 100%;
         max-width: 320px;
         text-align: center;
-        margin-bottom: 30px;
+        margin-bottom: 28px;
         padding: 0 10px;
     }
 
     .quote-text {
         font-family: 'Playfair Display', serif;
         font-style: italic;
-        font-size: 16px;
-        line-height: 1.6;
+        font-size: 15px;
+        line-height: 1.7;
         color: var(--text-quote);
         margin-bottom: 12px;
     }
@@ -468,19 +495,26 @@
 
     <!-- Game over screen -->
     <div id="gameOverScreen">
-        <div class="game-over-label">Final Score</div>
-        <div class="final-score" id="finalScore">0</div>
-        <div class="score-stats">
-            Perfects: <span id="perfectCount">0</span> · Best Combo: <span id="bestCombo">0</span>
+        <div class="game-over-content">
+            <!-- Tower graphic -->
+            <div class="tower-graphic">
+                <canvas id="towerCanvas" width="200" height="120"></canvas>
+            </div>
+            
+            <div class="game-over-label">Final Score</div>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="score-stats">
+                Perfects: <span id="perfectCount">0</span> · Best Combo: <span id="bestCombo">0</span>
+            </div>
+            <div class="new-record" id="newRecordBadge">★ NEW RECORD ★</div>
+            
+            <div class="quote-section">
+                <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
+                <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
+            </div>
+            
+            <p class="tap-restart">Tap to Retry</p>
         </div>
-        <div class="new-record" id="newRecordBadge">★ NEW RECORD ★</div>
-        
-        <div class="quote-section">
-            <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
-            <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
-        </div>
-        
-        <p class="tap-restart">Tap to Retry</p>
     </div>
 </div>
 
@@ -504,45 +538,136 @@
         BORDER_RADIUS: 10
     };
 
-    // Encouraging quotes
+    // Expanded encouraging quotes
     const QUOTES = [
+        // Leadership & Success
         { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
         { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+        { text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs" },
+        { text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
+        { text: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
+        
+        // Persistence & Growth
         { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+        { text: "Fall seven times, stand up eight.", author: "Japanese Proverb" },
+        { text: "The master has failed more times than the beginner has tried.", author: "Stephen McCranie" },
+        { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
+        { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas Edison" },
+        
+        // Belief & Confidence
         { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+        { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
         { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+        { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
+        { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
+        
+        // Action & Effort
+        { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
+        { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+        { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+        { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+        { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe" },
+        
+        // Vision & Dreams
+        { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray" },
+        { text: "Dream it. Wish it. Do it.", author: "Unknown" },
+        { text: "Go confidently in the direction of your dreams.", author: "Henry David Thoreau" },
+        { text: "All our dreams can come true if we have the courage to pursue them.", author: "Walt Disney" },
+        { text: "The biggest adventure you can take is to live the life of your dreams.", author: "Oprah Winfrey" },
+        
+        // Wisdom & Philosophy
         { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
         { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-        { text: "Your limitation—it's only your imagination.", author: "Unknown" },
+        { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
+        { text: "Life is 10% what happens to us and 90% how we react to it.", author: "Charles R. Swindoll" },
+        { text: "The only person you are destined to become is the person you decide to be.", author: "Ralph Waldo Emerson" },
+        
+        // Courage & Risk
+        { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
         { text: "Great things never come from comfort zones.", author: "Unknown" },
-        { text: "Dream it. Wish it. Do it.", author: "Unknown" },
-        { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
         { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
+        { text: "Take the risk or lose the chance.", author: "Unknown" },
+        { text: "Fortune favors the bold.", author: "Latin Proverb" },
+        
+        // Work & Excellence
         { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
-        { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
-        { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray" },
-        { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
-        { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
-        { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" }
+        { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
+        { text: "Quality is not an act, it is a habit.", author: "Aristotle" },
+        { text: "Excellence is not a skill, it's an attitude.", author: "Ralph Marston" },
+        { text: "The only place where success comes before work is in the dictionary.", author: "Vidal Sassoon" },
+        
+        // Mindset & Attitude
+        { text: "Your limitation—it's only your imagination.", author: "Unknown" },
+        { text: "The mind is everything. What you think you become.", author: "Buddha" },
+        { text: "Positive thinking will let you do everything better than negative thinking will.", author: "Zig Ziglar" },
+        { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
+        { text: "The only way to achieve the impossible is to believe it is possible.", author: "Charles Kingsleigh" },
+        
+        // Progress & Journey
+        { text: "A journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
+        { text: "Progress is impossible without change.", author: "George Bernard Shaw" },
+        { text: "Small progress is still progress.", author: "Unknown" },
+        { text: "Success is a journey, not a destination.", author: "Arthur Ashe" },
+        { text: "Every accomplishment starts with the decision to try.", author: "John F. Kennedy" }
     ];
 
-    // Beautiful gradient pairs for blocks
+    // Expanded beautiful gradient pairs for blocks
     const GRADIENTS = [
-        ['#667eea', '#764ba2'], // Purple
-        ['#f093fb', '#f5576c'], // Pink
-        ['#4facfe', '#00f2fe'], // Cyan
-        ['#43e97b', '#38f9d7'], // Green
-        ['#fa709a', '#fee140'], // Sunset
-        ['#a8edea', '#fed6e3'], // Soft
-        ['#ff9a9e', '#fecfef'], // Rose
-        ['#ffecd2', '#fcb69f'], // Peach
-        ['#667eea', '#764ba2'], // Purple
-        ['#6a11cb', '#2575fc'], // Royal
-        ['#f5af19', '#f12711'], // Fire
-        ['#00c6fb', '#005bea'], // Ocean
-        ['#b721ff', '#21d4fd'], // Electric
-        ['#c471f5', '#fa71cd'], // Candy
-        ['#48c6ef', '#6f86d6'], // Sky
+        // Purples & Violets
+        ['#667eea', '#764ba2'],
+        ['#6a11cb', '#2575fc'],
+        ['#7f00ff', '#e100ff'],
+        ['#8e2de2', '#4a00e0'],
+        ['#b721ff', '#21d4fd'],
+        
+        // Pinks & Magentas
+        ['#f093fb', '#f5576c'],
+        ['#ff0844', '#ffb199'],
+        ['#fa709a', '#fee140'],
+        ['#ff758c', '#ff7eb3'],
+        ['#c471f5', '#fa71cd'],
+        
+        // Blues & Cyans
+        ['#4facfe', '#00f2fe'],
+        ['#00c6fb', '#005bea'],
+        ['#48c6ef', '#6f86d6'],
+        ['#0acffe', '#495aff'],
+        ['#667eea', '#764ba2'],
+        
+        // Greens & Teals
+        ['#43e97b', '#38f9d7'],
+        ['#11998e', '#38ef7d'],
+        ['#00b09b', '#96c93d'],
+        ['#56ab2f', '#a8e063'],
+        ['#02aab0', '#00cdac'],
+        
+        // Oranges & Yellows
+        ['#f7971e', '#ffd200'],
+        ['#f2994a', '#f2c94c'],
+        ['#fc4a1a', '#f7b733'],
+        ['#f5af19', '#f12711'],
+        ['#fceabb', '#f8b500'],
+        
+        // Warm Tones
+        ['#ff9a9e', '#fecfef'],
+        ['#ffecd2', '#fcb69f'],
+        ['#ff6b6b', '#feca57'],
+        ['#ee9ca7', '#ffdde1'],
+        ['#f857a6', '#ff5858'],
+        
+        // Cool Tones
+        ['#a8edea', '#fed6e3'],
+        ['#d299c2', '#fef9d7'],
+        ['#89f7fe', '#66a6ff'],
+        ['#96fbc4', '#f9f586'],
+        ['#c2e9fb', '#a1c4fd'],
+        
+        // Rich & Deep
+        ['#1a2980', '#26d0ce'],
+        ['#134e5e', '#71b280'],
+        ['#0f2027', '#2c5364'],
+        ['#373b44', '#4286f4'],
+        ['#200122', '#6f0000']
     ];
 
     // ============================================================
@@ -572,6 +697,8 @@
     
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
+    const towerCanvas = document.getElementById('towerCanvas');
+    const towerCtx = towerCanvas.getContext('2d');
     let width, height, centerX, baseY, dpr;
 
     function resize() {
@@ -653,23 +780,23 @@
     // DRAWING UTILITIES
     // ============================================================
     
-    function roundRect(x, y, w, h, r) {
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + w - r, y);
-        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-        ctx.lineTo(x + w, y + h - r);
-        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-        ctx.lineTo(x + r, y + h);
-        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
+    function roundRect(context, x, y, w, h, r) {
+        context.beginPath();
+        context.moveTo(x + r, y);
+        context.lineTo(x + w - r, y);
+        context.quadraticCurveTo(x + w, y, x + w, y + r);
+        context.lineTo(x + w, y + h - r);
+        context.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        context.lineTo(x + r, y + h);
+        context.quadraticCurveTo(x, y + h, x, y + h - r);
+        context.lineTo(x, y + r);
+        context.quadraticCurveTo(x, y, x + r, y);
+        context.closePath();
     }
 
-    function getGradient(index, x, y, w, h) {
+    function getGradient(context, index, x, y, w, h) {
         const colors = GRADIENTS[index % GRADIENTS.length];
-        const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+        const gradient = context.createLinearGradient(x, y, x + w, y + h);
         gradient.addColorStop(0, colors[0]);
         gradient.addColorStop(1, colors[1]);
         return gradient;
@@ -686,20 +813,20 @@
         ctx.shadowOffsetX = 0;
         ctx.shadowOffsetY = 8;
         
-        roundRect(left, y, w, h, radius);
-        ctx.fillStyle = getGradient(colorIndex, left, y, w, h);
+        roundRect(ctx, left, y, w, h, radius);
+        ctx.fillStyle = getGradient(ctx, colorIndex, left, y, w, h);
         ctx.fill();
         ctx.restore();
         
         // Main block
-        roundRect(left, y, w, h, radius);
-        ctx.fillStyle = getGradient(colorIndex, left, y, w, h);
+        roundRect(ctx, left, y, w, h, radius);
+        ctx.fillStyle = getGradient(ctx, colorIndex, left, y, w, h);
         ctx.fill();
         
         // Top highlight
         ctx.save();
         ctx.globalAlpha = 0.25;
-        roundRect(left, y, w, h * 0.4, radius);
+        roundRect(ctx, left, y, w, h * 0.4, radius);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
         ctx.restore();
@@ -707,7 +834,7 @@
         // Bottom edge (subtle)
         ctx.save();
         ctx.globalAlpha = 0.15;
-        roundRect(left, y + h * 0.7, w, h * 0.3, radius);
+        roundRect(ctx, left, y + h * 0.7, w, h * 0.3, radius);
         ctx.fillStyle = '#000000';
         ctx.fill();
         ctx.restore();
@@ -735,11 +862,115 @@
             ctx.save();
             ctx.shadowColor = GRADIENTS[colorIndex % GRADIENTS.length][0];
             ctx.shadowBlur = 25;
-            roundRect(left, y, w, h, radius);
+            roundRect(ctx, left, y, w, h, radius);
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
             ctx.lineWidth = 2;
             ctx.stroke();
             ctx.restore();
+        }
+    }
+
+    // Draw mini tower for game over screen
+    function drawTowerGraphic(score) {
+        const tCanvas = towerCanvas;
+        const tCtx = towerCtx;
+        const tWidth = 200;
+        const tHeight = 120;
+        
+        // Set canvas size with DPR
+        const tdpr = window.devicePixelRatio || 1;
+        tCanvas.width = tWidth * tdpr;
+        tCanvas.height = tHeight * tdpr;
+        tCanvas.style.width = tWidth + 'px';
+        tCanvas.style.height = tHeight + 'px';
+        tCtx.scale(tdpr, tdpr);
+        
+        tCtx.clearRect(0, 0, tWidth, tHeight);
+        
+        // Calculate how many blocks to show (max 8 for visual)
+        const blocksToShow = Math.min(Math.max(score, 1), 8);
+        const blockHeight = 12;
+        const gap = 2;
+        const maxBlockWidth = 100;
+        const minBlockWidth = 40;
+        
+        // Starting position
+        const startY = tHeight - 10;
+        const centerX = tWidth / 2;
+        
+        for (let i = 0; i < blocksToShow; i++) {
+            // Calculate width (gets smaller as we go up, like real game)
+            const widthRatio = 1 - (i * 0.06);
+            const blockWidth = Math.max(maxBlockWidth * widthRatio, minBlockWidth);
+            
+            const y = startY - (i * (blockHeight + gap)) - blockHeight;
+            const x = centerX - blockWidth / 2;
+            
+            // Get gradient colors
+            const colors = GRADIENTS[i % GRADIENTS.length];
+            const gradient = tCtx.createLinearGradient(x, y, x + blockWidth, y + blockHeight);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(1, colors[1]);
+            
+            // Draw shadow
+            tCtx.save();
+            tCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            tCtx.shadowBlur = 8;
+            tCtx.shadowOffsetY = 3;
+            
+            roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
+            tCtx.fillStyle = gradient;
+            tCtx.fill();
+            tCtx.restore();
+            
+            // Main block
+            roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
+            tCtx.fillStyle = gradient;
+            tCtx.fill();
+            
+            // Highlight
+            tCtx.save();
+            tCtx.globalAlpha = 0.3;
+            roundRect(tCtx, x, y, blockWidth, blockHeight * 0.4, 4);
+            tCtx.fillStyle = '#ffffff';
+            tCtx.fill();
+            tCtx.restore();
+        }
+        
+        // Draw score number above tower with glow
+        if (score > 0) {
+            const topBlockY = startY - (blocksToShow * (blockHeight + gap)) - 15;
+            
+            tCtx.save();
+            tCtx.font = "bold 24px 'Bebas Neue', sans-serif";
+            tCtx.textAlign = 'center';
+            tCtx.textBaseline = 'middle';
+            
+            // Glow
+            tCtx.shadowColor = GRADIENTS[score % GRADIENTS.length][0];
+            tCtx.shadowBlur = 15;
+            tCtx.fillStyle = '#ffffff';
+            tCtx.fillText(score, centerX, topBlockY);
+            tCtx.restore();
+        }
+        
+        // Add sparkles for high scores
+        if (score >= 10) {
+            const sparkleCount = Math.min(Math.floor(score / 5), 8);
+            for (let i = 0; i < sparkleCount; i++) {
+                const sx = 20 + Math.random() * (tWidth - 40);
+                const sy = 10 + Math.random() * 60;
+                const size = 2 + Math.random() * 3;
+                
+                tCtx.save();
+                tCtx.fillStyle = '#ffd93d';
+                tCtx.shadowColor = '#ffd93d';
+                tCtx.shadowBlur = 10;
+                tCtx.beginPath();
+                tCtx.arc(sx, sy, size, 0, Math.PI * 2);
+                tCtx.fill();
+                tCtx.restore();
+            }
         }
     }
 
@@ -760,7 +991,7 @@
 
     function spawnNextBlock() {
         const lastBlock = state.stack[state.stack.length - 1];
-        const newY = lastBlock.y - CONFIG.BLOCK_HEIGHT - 4; // Gap between blocks
+        const newY = lastBlock.y - CONFIG.BLOCK_HEIGHT - 4;
         const fromLeft = state.direction > 0;
         
         state.current = createBlock(newY, lastBlock.width, !fromLeft);
@@ -908,9 +1139,8 @@
             ctx.rotate(piece.rotation);
             ctx.globalAlpha = 0.85;
             
-            // Simplified falling block
-            const gradient = getGradient(piece.colorIndex, -piece.width / 2, -piece.height / 2, piece.width, piece.height);
-            roundRect(-piece.width / 2, -piece.height / 2, piece.width, piece.height, CONFIG.BORDER_RADIUS);
+            const gradient = getGradient(ctx, piece.colorIndex, -piece.width / 2, -piece.height / 2, piece.width, piece.height);
+            roundRect(ctx, -piece.width / 2, -piece.height / 2, piece.width, piece.height, CONFIG.BORDER_RADIUS);
             ctx.fillStyle = gradient;
             ctx.fill();
             
@@ -997,6 +1227,9 @@
             state.highScore = state.score;
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
+        
+        // Draw tower graphic
+        drawTowerGraphic(state.score);
         
         // Set quote
         const quote = getRandomQuote();
