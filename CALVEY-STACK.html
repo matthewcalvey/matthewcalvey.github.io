@@ -6,8 +6,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>STACK - CALVEY INC.</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --bg: #0f0f13;
@@ -20,41 +18,96 @@
             --border: #2a2a3e;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         html, body {
-            width: 100%; height: 100%; overflow: hidden;
-            background: var(--bg); font-family: 'IBM Plex Mono', monospace;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg);
+            font-family: 'IBM Plex Mono', monospace;
             -webkit-tap-highlight-color: transparent;
         }
 
         #gameContainer {
-            width: 100%; height: 100%; position: relative; overflow: hidden;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
             background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lighter) 100%);
         }
 
         #gameContainer::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background-image: linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 40px 40px; pointer-events: none;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
         }
 
         #scoreDisplay {
-            position: absolute; top: 20px; left: 0; right: 0;
-            text-align: center; z-index: 100; padding-top: 24px; pointer-events: none;
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 100;
+            padding-top: 24px;
+            pointer-events: none;
         }
 
-        .score-label { font-size: 10px; font-weight: 500; letter-spacing: 0.35em; color: var(--text-dim); text-transform: uppercase; }
-        .score-value { font-family: 'Bebas Neue', sans-serif; font-size: 80px; color: var(--text); line-height: 1; text-shadow: 0 4px 30px rgba(0,0,0,0.5); }
-        .high-score { font-size: 11px; font-weight: 500; color: var(--text-dim); margin-top: 6px; letter-spacing: 0.1em; }
+        .score-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.35em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        .score-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 80px;
+            color: var(--text);
+            line-height: 1;
+            text-shadow: 0 4px 30px rgba(0,0,0,0.5);
+        }
+
+        .high-score {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-dim);
+            margin-top: 6px;
+            letter-spacing: 0.1em;
+        }
 
         #perfectIndicator {
-            position: absolute; top: 48%; left: 50%; transform: translate(-50%, -50%);
-            font-family: 'Bebas Neue', sans-serif; font-size: 56px; color: var(--perfect);
-            text-shadow: 0 0 40px var(--perfect); opacity: 0; z-index: 200; pointer-events: none;
+            position: absolute;
+            top: 48%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 56px;
+            letter-spacing: 0.05em;
+            color: var(--perfect);
+            text-shadow: 0 0 40px var(--perfect), 0 0 80px rgba(255, 217, 61, 0.5);
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
         }
 
-        #perfectIndicator.show { animation: perfectPop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        #perfectIndicator.show {
+            animation: perfectPop 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
 
         @keyframes perfectPop {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
@@ -63,392 +116,1284 @@
         }
 
         #comboDisplay {
-            position: absolute; top: 43%; left: 50%; transform: translateX(-50%);
-            font-size: 13px; font-weight: 600; letter-spacing: 0.25em; color: var(--perfect);
-            opacity: 0; z-index: 200; transition: opacity 0.2s;
+            position: absolute;
+            top: 43%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            color: var(--perfect);
+            text-shadow: 0 0 20px rgba(255, 217, 61, 0.6);
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.2s;
         }
 
         #comboDisplay.show { opacity: 1; }
-        #gameCanvas { width: 100%; height: 100%; display: block; }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        #tapHint {
+            position: absolute;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.25em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
 
         #startScreen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            z-index: 500; background: var(--bg); cursor: pointer;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            background: var(--bg);
+            cursor: pointer;
         }
 
         #startScreen.hidden { display: none; }
-        .brand-logo { font-size: 11px; font-weight: 600; letter-spacing: 0.4em; color: var(--text-dim); margin-bottom: 20px; padding: 8px 16px; border: 1px solid var(--text-dim); border-radius: 4px; }
-        .game-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(90px, 28vw, 160px); color: var(--text); letter-spacing: 0.08em; line-height: 1; }
-        .tap-start { font-size: 13px; font-weight: 500; letter-spacing: 0.35em; color: var(--text); text-transform: uppercase; margin-top: 30px; animation: pulse 2s infinite; }
 
-        #gameOverScreen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 500; background: rgba(15, 15, 19, 0.98); opacity: 0;
-            pointer-events: none; transition: opacity 0.4s; overflow-y: auto;
+        .brand-logo {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.4em;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            padding: 8px 16px;
+            border: 1px solid var(--text-dim);
+            border-radius: 4px;
         }
 
-        #gameOverScreen.visible { opacity: 1; pointer-events: auto; }
-        .game-over-wrapper { min-height: 100%; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px; }
-        .final-score { font-family: 'Bebas Neue', sans-serif; font-size: 72px; color: var(--text); line-height: 1; }
-        
-        /* New Record styling */
-        .new-record { font-size: 10px; font-weight: 600; color: var(--perfect); border: 2px solid var(--perfect); padding: 8px 20px; border-radius: 6px; margin: 15px 0; display: none; }
-        .new-record.visible { display: block; }
+        .game-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(90px, 28vw, 160px);
+            color: var(--text);
+            letter-spacing: 0.08em;
+            line-height: 1;
+            margin-bottom: 8px;
+            text-shadow: 0 6px 40px rgba(0,0,0,0.4);
+        }
 
-        /* Username styling */
-        .username-section { width: 100%; max-width: 300px; margin: 20px 0; }
-        .username-input-wrapper { display: flex; gap: 8px; margin-top: 8px; }
-        .username-input { flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: var(--text); font-family: inherit; }
-        .username-save-btn { background: #764ba2; border: none; border-radius: 6px; padding: 0 15px; color: white; cursor: pointer; font-weight: 600; }
-        
-        /* Leaderboard styling */
-        .leaderboard-section { width: 100%; max-width: 320px; margin-top: 20px; }
-        .leaderboard-header { font-size: 10px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; display: flex; justify-content: space-between; }
-        .leaderboard-status { color: #43e97b; font-size: 9px; }
-        .leaderboard { background: var(--bg-card); border-radius: 10px; overflow: hidden; border: 1px solid var(--border); }
-        .leaderboard-entry { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid var(--border); }
-        .leaderboard-entry.is-me { background: rgba(255, 217, 61, 0.05); }
-        .entry-rank { font-family: 'Bebas Neue'; font-size: 18px; width: 30px; color: var(--text-dim); }
-        .entry-name { flex: 1; text-align: left; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .entry-score { font-family: 'Bebas Neue'; font-size: 20px; color: var(--perfect); }
+        .game-subtitle {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.5em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 50px;
+        }
 
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        .hidden { display: none !important; }
+        .start-demo {
+            width: 140px;
+            height: 100px;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .demo-block {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 24px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 7px;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .demo-block:nth-child(1) { 
+            width: 120px; bottom: 0; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .demo-block:nth-child(2) { 
+            width: 110px; bottom: 26px; 
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        .demo-block:nth-child(3) { 
+            width: 100px; bottom: 52px; 
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .demo-block:nth-child(4) { 
+            width: 90px; bottom: 78px; 
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        @keyframes demoStack {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        .demo-block { animation: demoStack 2s ease-in-out infinite; }
+        .demo-block:nth-child(2) { animation-delay: 0.2s; }
+        .demo-block:nth-child(3) { animation-delay: 0.4s; }
+        .demo-block:nth-child(4) { animation-delay: 0.6s; }
+
+        .start-text {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            z-index: 400;
+            background: var(--bg);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s, visibility 0.4s;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #gameOverScreen.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .gameover-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 24px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .tower-graphic {
+            width: 100%;
+            max-width: 280px;
+            height: 180px;
+            margin: 20px auto 30px;
+            position: relative;
+        }
+
+        #towerCanvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .score-summary {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .final-score-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.35em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .final-score {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 72px;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .new-record-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, var(--perfect) 0%, #ffb93d 100%);
+            color: var(--bg);
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            border-radius: 20px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+
+        .new-record-badge.visible {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .stats-row {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            flex: 1;
+            max-width: 140px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            color: var(--text);
+            line-height: 1;
+        }
+
+        .username-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .username-label {
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 0.2em;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .username-input-area {
+            display: flex;
+            gap: 8px;
+        }
+
+        .username-input-area.hidden {
+            display: none;
+        }
+
+        #usernameInput {
+            flex: 1;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            outline: none;
+        }
+
+        #usernameInput:focus {
+            border-color: var(--perfect);
+        }
+
+        #saveUsernameBtn {
+            padding: 10px 20px;
+            background: var(--perfect);
+            color: var(--bg);
+            border: none;
+            border-radius: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .username-display-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .username-display-area.hidden {
+            display: none;
+        }
+
+        .username-display {
+            font-size: 16px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        #changeNameBtn {
+            padding: 6px 12px;
+            background: transparent;
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .leaderboard-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .leaderboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .leaderboard-title {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            color: var(--text);
+            text-transform: uppercase;
+        }
+
+        .leaderboard-status {
+            font-size: 9px;
+            color: var(--text-dim);
+            letter-spacing: 0.05em;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .leaderboard-entry {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .leaderboard-entry.current-player {
+            border-color: var(--perfect);
+            background: rgba(255, 217, 61, 0.05);
+        }
+
+        .leaderboard-rank {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            color: var(--text-dim);
+            min-width: 28px;
+        }
+
+        .leaderboard-rank.top3 {
+            color: var(--perfect);
+        }
+
+        .leaderboard-name {
+            flex: 1;
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .leaderboard-score {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .quote-section {
+            margin: 30px 0;
+            padding: 24px;
+            background: var(--bg-card);
+            border-left: 3px solid var(--perfect);
+            border-radius: 8px;
+        }
+
+        .quote-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 15px;
+            font-style: italic;
+            color: var(--text-quote);
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
+        .quote-author {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-align: right;
+        }
+
+        .restart-section {
+            margin-top: auto;
+            padding: 20px 0;
+        }
+
+        #tapRestart {
+            width: 100%;
+            padding: 16px;
+            background: var(--perfect);
+            color: var(--bg);
+            border: none;
+            border-radius: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        #tapRestart:active {
+            transform: scale(0.98);
+        }
+
+        #soundToggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 600;
+        }
+
+        #soundBtn {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        #soundBtn:hover {
+            border-color: var(--perfect);
+        }
+
+        #soundBtn.off {
+            color: var(--text-dim);
+            opacity: 0.5;
+        }
+
+        @media (max-width: 480px) {
+            .score-value { font-size: 64px; }
+            .final-score { font-size: 56px; }
+            .stats-row { flex-direction: column; }
+            .stat-box { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
+        
         <div id="scoreDisplay">
-            <div class="score-label">Score</div>
-            <div class="score-value" id="scoreValue">0</div>
-            <div class="high-score">Global Best: <span id="highScoreValue">0</span></div>
+            <div class="score-label">LEVEL</div>
+            <div class="score-value" id="currentScore">0</div>
+            <div class="high-score">BEST: <span id="highScoreValue">0</span></div>
         </div>
 
         <div id="perfectIndicator">PERFECT</div>
-        <div id="comboDisplay">×1 COMBO</div>
+        <div id="comboDisplay">COMBO ×<span id="comboCount">0</span></div>
+        <div id="tapHint">TAP TO STACK</div>
+
+        <div id="soundToggle">
+            <button id="soundBtn">♪</button>
+        </div>
 
         <div id="startScreen">
             <div class="brand-logo">CALVEY INC.</div>
-            <h1 class="game-title">STACK</h1>
-            <p class="tap-start">Tap to Start Empire</p>
+            <div class="game-title">STACK</div>
+            <div class="game-subtitle">BUILD YOUR TOWER</div>
+            <div class="start-demo">
+                <div class="demo-block">LEVEL 1</div>
+                <div class="demo-block">LEVEL 2</div>
+                <div class="demo-block">LEVEL 3</div>
+                <div class="demo-block">LEVEL 4</div>
+            </div>
+            <div class="start-text">TAP TO START</div>
         </div>
 
         <div id="gameOverScreen">
-            <div class="game-over-wrapper">
-                <div class="final-score" id="finalScore">0</div>
-                <div class="new-record" id="newRecordBadge">★ NEW WORLD RECORD ★</div>
-                
-                <div class="username-section">
-                    <div id="usernameInputArea">
-                        <p style="font-size: 9px; color: var(--text-dim);">CLAIM YOUR RANK</p>
-                        <div class="username-input-wrapper">
-                            <input type="text" class="username-input" id="usernameInput" placeholder="Name" maxlength="12">
-                            <button class="username-save-btn" id="saveUsernameBtn">OK</button>
-                        </div>
+            <div class="gameover-content">
+                <div class="tower-graphic">
+                    <canvas id="towerCanvas"></canvas>
+                </div>
+
+                <div class="score-summary">
+                    <div class="final-score-label">FINAL SCORE</div>
+                    <div class="final-score" id="finalScore">0</div>
+                    <div class="new-record-badge" id="newRecordBadge">★ NEW RECORD ★</div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-label">Perfect</div>
+                        <div class="stat-value" id="perfectCount">0</div>
                     </div>
-                    <div id="usernameDisplayArea" class="hidden">
-                        <p style="font-size: 12px; color: var(--text-quote);">Ranked as: <strong id="currentUsername" style="color: var(--text);"></strong></p>
+                    <div class="stat-box">
+                        <div class="stat-label">Combo</div>
+                        <div class="stat-value" id="bestCombo">0</div>
+                    </div>
+                </div>
+
+                <div class="username-section">
+                    <div class="username-label">Your Name</div>
+                    <div class="username-input-area" id="usernameInputArea">
+                        <input type="text" id="usernameInput" maxlength="20" placeholder="Enter your name">
+                        <button id="saveUsernameBtn">Save</button>
+                    </div>
+                    <div class="username-display-area hidden" id="usernameDisplayArea">
+                        <div class="username-display" id="usernameDisplay">Player</div>
+                        <button id="changeNameBtn">Change</button>
                     </div>
                 </div>
 
                 <div class="leaderboard-section">
                     <div class="leaderboard-header">
-                        <span>🏆 Global Top 10</span>
-                        <span class="leaderboard-status">LIVE</span>
+                        <div class="leaderboard-title">Global Leaderboard</div>
+                        <div class="leaderboard-status" id="leaderboardStatus">Loading...</div>
                     </div>
-                    <div class="leaderboard" id="leaderboard">
-                        <div style="padding: 20px; color: var(--text-dim); font-size: 11px;">Syncing with cloud...</div>
+                    <div class="leaderboard-list" id="leaderboardList">
+                        <!-- Leaderboard entries populated by JS -->
                     </div>
                 </div>
-                
-                <p class="tap-start" id="tapRestart" style="margin-top: 30px; cursor: pointer;">Tap to Try Again</p>
+
+                <div class="quote-section">
+                    <div class="quote-text" id="quoteText">"Success is not final, failure is not fatal."</div>
+                    <div class="quote-author" id="quoteAuthor">— Winston Churchill</div>
+                </div>
+
+                <div class="restart-section">
+                    <button id="tapRestart">PLAY AGAIN</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ============================================================
-        // FIREBASE CONFIGURATION (REPLACE THIS WITH YOUR OWN)
-        // ============================================================
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_ID",
-            appId: "YOUR_APP_ID"
-        };
+        const QUOTES = [
+            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+            { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
+            { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
+            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
+            { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
+            { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
+            { text: "Success is walking from failure to failure with no loss of enthusiasm.", author: "Winston Churchill" },
+            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" }
+        ];
 
-        // Initialize Firebase
-        if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-            firebase.initializeApp(firebaseConfig);
-        }
-        const db = firebase.database ? firebase.database() : null;
-
-        // ============================================================
-        // GAME LOGIC
-        // ============================================================
         const CONFIG = {
-            BLOCK_HEIGHT: 32, INITIAL_WIDTH: 200, MIN_WIDTH: 20,
-            INITIAL_SPEED: 3.5, SPEED_INCREMENT: 0.1, MAX_SPEED: 12,
-            PERFECT_TOLERANCE: 7, CAMERA_LERP: 0.1, STACK_VISIBLE: 10
+            INITIAL_WIDTH: 140,
+            BLOCK_HEIGHT: 24,
+            INITIAL_SPEED: 2.5,
+            SPEED_INCREMENT: 0.08,
+            MAX_SPEED: 7,
+            PERFECT_THRESHOLD: 8,
+            BORDER_RADIUS: 8,
+            STACK_VISIBLE: 8,
+            CAMERA_LERP: 0.15
         };
 
-        const GRADIENTS = [['#667eea', '#764ba2'], ['#f093fb', '#f5576c'], ['#4facfe', '#00f2fe'], ['#43e97b', '#38f9d7'], ['#fa709a', '#fee140']];
+        const GRADIENTS = [
+            { start: '#667eea', end: '#764ba2' },
+            { start: '#f093fb', end: '#f5576c' },
+            { start: '#4facfe', end: '#00f2fe' },
+            { start: '#43e97b', end: '#38f9d7' },
+            { start: '#fa709a', end: '#fee140' },
+            { start: '#30cfd0', end: '#330867' },
+            { start: '#a8edea', end: '#fed6e3' },
+            { start: '#ff9a9e', end: '#fecfef' }
+        ];
 
-        const state = {
-            playing: false, score: 0, globalBest: 0, combo: 0,
-            current: null, stack: [], falling: [],
-            cameraY: 0, targetCameraY: 0, direction: 1, speed: CONFIG.INITIAL_SPEED,
-            username: localStorage.getItem('calveyUsername') || '',
-            uid: localStorage.getItem('calveyUid') || 'u_' + Math.random().toString(36).substr(2, 9)
-        };
-        localStorage.setItem('calveyUid', state.uid);
-
-        // ============================================================
-        // WEB LEADERBOARD LOGIC
-        // ============================================================
-        function syncScore(score) {
-            if (!db || !state.username) return;
-            
-            // Reference to this specific user's score in the global DB
-            const userScoreRef = db.ref('leaderboard/' + state.uid);
-            
-            userScoreRef.once('value').then((snapshot) => {
-                const currentDBScore = (snapshot.val() && snapshot.val().score) || 0;
-                
-                // Only update if new score is better
-                if (score > currentDBScore) {
-                    userScoreRef.set({
-                        name: state.username,
-                        score: score,
-                        timestamp: Date.now()
-                    });
-                }
-            });
-        }
-
-        function listenToLeaderboard() {
-            if (!db) return;
-            const topScoresRef = db.ref('leaderboard').orderByChild('score').limitToLast(10);
-            
-            topScoresRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                const scores = [];
-                for (let id in data) {
-                    scores.push({ id, ...data[id] });
-                }
-                scores.sort((a, b) => b.score - a.score);
-                
-                if (scores.length > 0) {
-                    state.globalBest = scores[0].score;
-                    document.getElementById('highScoreValue').textContent = state.globalBest;
-                }
-                renderLeaderboardUI(scores);
-            });
-        }
-
-        function renderLeaderboardUI(scores) {
-            const container = document.getElementById('leaderboard');
-            container.innerHTML = '';
-            
-            scores.forEach((entry, index) => {
-                const div = document.createElement('div');
-                div.className = `leaderboard-entry ${entry.id === state.uid ? 'is-me' : ''}`;
-                div.innerHTML = `
-                    <span class="entry-rank">#${index + 1}</span>
-                    <span class="entry-name">${entry.name}</span>
-                    <span class="entry-score">${entry.score}</span>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // ============================================================
-        // ENGINE & RENDERING
-        // ============================================================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, centerX, baseY;
 
-        function resize() {
-            width = window.innerWidth;
-            height = window.innerHeight;
-            canvas.width = width * (window.devicePixelRatio || 1);
-            canvas.height = height * (window.devicePixelRatio || 1);
-            ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
             centerX = width / 2;
-            baseY = height * 0.75;
+            baseY = height - 80;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        const state = {
+            playing: false,
+            score: 0,
+            highScore: parseInt(localStorage.getItem('calveyStackHighScore') || '0'),
+            combo: 0,
+            maxCombo: 0,
+            perfects: 0,
+            speed: CONFIG.INITIAL_SPEED,
+            direction: 1,
+            stack: [],
+            current: null,
+            falling: [],
+            cameraY: 0,
+            targetCameraY: 0,
+            soundEnabled: true,
+            username: localStorage.getItem('calveyStackUsername') || ''
+        };
+
+        // ============================================================
+        // AUDIO
+        // ============================================================
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        let audioInitialized = false;
+
+        function initAudio() {
+            if (audioInitialized) return;
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            audioInitialized = true;
         }
 
-        function drawBlock(x, y, w, h, index) {
-            const colors = GRADIENTS[index % GRADIENTS.length];
-            const grad = ctx.createLinearGradient(x - w/2, y, x + w/2, y + h);
-            grad.addColorStop(0, colors[0]); grad.addColorStop(1, colors[1]);
-            
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.roundRect(x - w / 2, y, w, h, 8);
-            ctx.fill();
-            
-            if (w > 50) {
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                ctx.font = '600 9px IBM Plex Mono';
-                ctx.textAlign = 'center';
-                ctx.fillText('CALVEY INC.', x, y + h/2 + 3);
+        function playSound(type) {
+            if (!state.soundEnabled || !audioInitialized) return;
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            if (type === 'place') {
+                oscillator.frequency.value = 440 + (state.score * 10);
+                gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } else if (type === 'perfect') {
+                oscillator.frequency.value = 880;
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.15);
+            } else if (type === 'fail') {
+                oscillator.frequency.value = 110;
+                oscillator.type = 'sawtooth';
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
             }
+        }
+
+        // ============================================================
+        // USERNAME MANAGEMENT
+        // ============================================================
+        function saveUsername(name) {
+            const trimmed = name.trim();
+            if (trimmed) {
+                state.username = trimmed;
+                localStorage.setItem('calveyStackUsername', trimmed);
+                updateUsernameDisplay();
+            }
+        }
+
+        function updateUsernameDisplay() {
+            const inputArea = document.getElementById('usernameInputArea');
+            const displayArea = document.getElementById('usernameDisplayArea');
+            const display = document.getElementById('usernameDisplay');
+
+            if (state.username) {
+                inputArea.classList.add('hidden');
+                displayArea.classList.remove('hidden');
+                display.textContent = state.username;
+            } else {
+                inputArea.classList.remove('hidden');
+                displayArea.classList.add('hidden');
+            }
+        }
+
+        // ============================================================
+        // LEADERBOARD WITH PERSISTENT STORAGE
+        // ============================================================
+        async function updateLeaderboard(newScore) {
+            if (!state.username) {
+                document.getElementById('leaderboardStatus').textContent = 'Set name to join';
+                return;
+            }
+
+            try {
+                document.getElementById('leaderboardStatus').textContent = 'Updating...';
+
+                // Generate unique player ID based on username
+                const playerId = 'player_' + btoa(state.username).replace(/[^a-zA-Z0-9]/g, '').substring(0, 20);
+                
+                // Get existing player data
+                let playerData = { username: state.username, highScore: newScore };
+                
+                try {
+                    const existing = await window.storage.get(playerId, true);
+                    if (existing && existing.value) {
+                        const existingData = JSON.parse(existing.value);
+                        playerData.highScore = Math.max(existingData.highScore, newScore);
+                    }
+                } catch (e) {
+                    // Player doesn't exist yet, which is fine
+                }
+
+                // Save updated player data
+                await window.storage.set(playerId, JSON.stringify(playerData), true);
+
+                // Load and display leaderboard
+                await loadGlobalLeaderboard();
+
+            } catch (error) {
+                console.error('Leaderboard error:', error);
+                document.getElementById('leaderboardStatus').textContent = 'Error updating';
+            }
+        }
+
+        async function loadGlobalLeaderboard() {
+            try {
+                document.getElementById('leaderboardStatus').textContent = 'Loading...';
+
+                // Get all player keys
+                const result = await window.storage.list('player_', true);
+                
+                if (!result || !result.keys || result.keys.length === 0) {
+                    displayLeaderboard([]);
+                    document.getElementById('leaderboardStatus').textContent = 'Be the first!';
+                    return;
+                }
+
+                // Load all player data
+                const playerPromises = result.keys.map(async (key) => {
+                    try {
+                        const data = await window.storage.get(key, true);
+                        if (data && data.value) {
+                            return JSON.parse(data.value);
+                        }
+                    } catch (e) {
+                        return null;
+                    }
+                });
+
+                const players = (await Promise.all(playerPromises)).filter(p => p !== null);
+
+                // Sort by high score
+                players.sort((a, b) => b.highScore - a.highScore);
+
+                // Take top 10
+                const topPlayers = players.slice(0, 10);
+
+                displayLeaderboard(topPlayers);
+                document.getElementById('leaderboardStatus').textContent = `${players.length} players`;
+
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                document.getElementById('leaderboardStatus').textContent = 'Load failed';
+                displayLeaderboard([]);
+            }
+        }
+
+        function displayLeaderboard(players) {
+            const list = document.getElementById('leaderboardList');
+            list.innerHTML = '';
+
+            if (players.length === 0) {
+                list.innerHTML = '<div style="text-align: center; color: var(--text-dim); padding: 20px;">No scores yet. Be the first!</div>';
+                return;
+            }
+
+            players.forEach((player, index) => {
+                const entry = document.createElement('div');
+                entry.className = 'leaderboard-entry';
+                
+                if (player.username === state.username) {
+                    entry.classList.add('current-player');
+                }
+
+                const rank = document.createElement('div');
+                rank.className = 'leaderboard-rank';
+                if (index < 3) rank.classList.add('top3');
+                rank.textContent = `#${index + 1}`;
+
+                const name = document.createElement('div');
+                name.className = 'leaderboard-name';
+                name.textContent = player.username;
+
+                const score = document.createElement('div');
+                score.className = 'leaderboard-score';
+                score.textContent = player.highScore;
+
+                entry.appendChild(rank);
+                entry.appendChild(name);
+                entry.appendChild(score);
+                list.appendChild(entry);
+            });
+        }
+
+        // ============================================================
+        // TOWER GRAPHIC
+        // ============================================================
+        function drawTowerGraphic(score, highScore) {
+            const towerCanvas = document.getElementById('towerCanvas');
+            const towerCtx = towerCanvas.getContext('2d');
+            const w = towerCanvas.width = 280;
+            const h = towerCanvas.height = 180;
+
+            towerCtx.clearRect(0, 0, w, h);
+
+            const maxBlocks = Math.min(score, 10);
+            const blockH = 14;
+            const spacing = 2;
+            const startY = h - 20;
+
+            for (let i = 0; i < maxBlocks; i++) {
+                const colorIndex = i % GRADIENTS.length;
+                const grad = GRADIENTS[colorIndex];
+                const y = startY - i * (blockH + spacing);
+                const blockW = 100 - (i * 4);
+                const x = (w - blockW) / 2;
+
+                const gradient = towerCtx.createLinearGradient(x, y, x + blockW, y + blockH);
+                gradient.addColorStop(0, grad.start);
+                gradient.addColorStop(1, grad.end);
+
+                towerCtx.fillStyle = gradient;
+                towerCtx.beginPath();
+                towerCtx.roundRect(x, y, blockW, blockH, 4);
+                towerCtx.fill();
+            }
+
+            // Draw score label
+            towerCtx.fillStyle = 'rgba(255,255,255,0.5)';
+            towerCtx.font = '11px "IBM Plex Mono"';
+            towerCtx.textAlign = 'center';
+            towerCtx.fillText(`Your Tower: ${score} blocks`, w / 2, h - 4);
+        }
+
+        // ============================================================
+        // DRAWING
+        // ============================================================
+        function getGradient(ctx, colorIndex, x, y, w, h) {
+            const colors = GRADIENTS[colorIndex % GRADIENTS.length];
+            const gradient = ctx.createLinearGradient(x, y, x + w, y + h);
+            gradient.addColorStop(0, colors.start);
+            gradient.addColorStop(1, colors.end);
+            return gradient;
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.arcTo(x + w, y, x + w, y + r, r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+            ctx.lineTo(x + r, y + h);
+            ctx.arcTo(x, y + h, x, y + h - r, r);
+            ctx.lineTo(x, y + r);
+            ctx.arcTo(x, y, x + r, y, r);
+            ctx.closePath();
+        }
+
+        function drawBlock(x, y, w, h, colorIndex, isCurrent) {
+            const halfW = w / 2;
+            const drawX = x - halfW;
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = isCurrent ? 25 : 15;
+            ctx.shadowOffsetY = isCurrent ? 8 : 4;
+
+            const gradient = getGradient(ctx, colorIndex, drawX, y, w, h);
+            roundRect(ctx, drawX, y, w, h, CONFIG.BORDER_RADIUS);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
+        }
+
+        // ============================================================
+        // UI
+        // ============================================================
+        function updateUI() {
+            document.getElementById('currentScore').textContent = state.score;
+            document.getElementById('highScoreValue').textContent = state.highScore;
+            
+            const comboEl = document.getElementById('comboDisplay');
+            if (state.combo >= 2) {
+                document.getElementById('comboCount').textContent = state.combo;
+                comboEl.classList.add('show');
+            } else {
+                comboEl.classList.remove('show');
+            }
+        }
+
+        function showPerfectIndicator() {
+            const indicator = document.getElementById('perfectIndicator');
+            indicator.classList.remove('show');
+            void indicator.offsetWidth;
+            indicator.classList.add('show');
+        }
+
+        // ============================================================
+        // GAME LOGIC
+        // ============================================================
+        function spawnNextBlock() {
+            const prev = state.stack[state.stack.length - 1];
+            state.current = {
+                x: centerX,
+                y: prev.y - (CONFIG.BLOCK_HEIGHT + 4),
+                width: prev.width,
+                height: CONFIG.BLOCK_HEIGHT,
+                placed: false
+            };
         }
 
         function placeBlock() {
-            const last = state.stack[state.stack.length - 1];
-            const drift = state.current.x - last.x;
-            const overlap = state.current.width - Math.abs(drift);
+            if (!state.current || state.current.placed) return;
 
-            if (overlap <= 0) return gameOver();
+            const current = state.current;
+            const prev = state.stack[state.stack.length - 1];
+            const overlap = Math.min(
+                current.x + current.width / 2,
+                prev.x + prev.width / 2
+            ) - Math.max(
+                current.x - current.width / 2,
+                prev.x - prev.width / 2
+            );
 
-            if (Math.abs(drift) < CONFIG.PERFECT_TOLERANCE) {
-                state.current.x = last.x;
-                state.current.width = last.width;
-                state.combo++;
-                showPerfect();
-            } else {
-                state.current.width = overlap;
-                state.current.x = drift > 0 ? last.x + (drift/2) + ( (last.width - overlap) / 2) : last.x + (drift/2) - ( (last.width - overlap) / 2);
-                state.combo = 0;
+            if (overlap <= 0) {
+                gameOver();
+                return;
             }
 
-            state.current.placed = true;
-            state.stack.push(state.current);
+            const isPerfect = Math.abs(current.x - prev.x) < CONFIG.PERFECT_THRESHOLD;
+
+            if (isPerfect) {
+                playSound('perfect');
+                state.combo++;
+                state.perfects++;
+                state.maxCombo = Math.max(state.maxCombo, state.combo);
+                showPerfectIndicator();
+            } else {
+                playSound('place');
+                state.combo = 0;
+
+                const newWidth = overlap;
+                const overhangLeft = Math.max(0, (prev.x - prev.width / 2) - (current.x - current.width / 2));
+                const overhangRight = Math.max(0, (current.x + current.width / 2) - (prev.x + prev.width / 2));
+
+                if (overhangLeft > 0) {
+                    state.falling.push({
+                        x: current.x - current.width / 2 + overhangLeft / 2,
+                        y: current.y,
+                        width: overhangLeft,
+                        height: current.height,
+                        vy: 0,
+                        vx: -2,
+                        rotation: 0,
+                        rotationSpeed: -0.05,
+                        colorIndex: state.stack.length
+                    });
+                }
+
+                if (overhangRight > 0) {
+                    state.falling.push({
+                        x: current.x + current.width / 2 - overhangRight / 2,
+                        y: current.y,
+                        width: overhangRight,
+                        height: current.height,
+                        vy: 0,
+                        vx: 2,
+                        rotation: 0,
+                        rotationSpeed: 0.05,
+                        colorIndex: state.stack.length
+                    });
+                }
+
+                current.width = newWidth;
+                current.x = (Math.max(current.x - current.width / 2, prev.x - prev.width / 2) +
+                           Math.min(current.x + current.width / 2, prev.x + prev.width / 2)) / 2;
+            }
+
+            current.placed = true;
+            state.stack.push(current);
             state.score++;
-            state.speed = Math.min(state.speed + CONFIG.SPEED_INCREMENT, CONFIG.MAX_SPEED);
-            state.targetCameraY = Math.max(0, (state.stack.length - 5) * (CONFIG.BLOCK_HEIGHT + 4));
-            
-            spawnBlock();
-            document.getElementById('scoreValue').textContent = state.score;
+            state.targetCameraY = Math.max(0, (state.stack.length - CONFIG.STACK_VISIBLE) * (CONFIG.BLOCK_HEIGHT + 4));
+            state.speed = Math.min(CONFIG.INITIAL_SPEED + state.score * CONFIG.SPEED_INCREMENT, CONFIG.MAX_SPEED);
+            updateUI();
+            spawnNextBlock();
         }
 
-        function spawnBlock() {
-            const last = state.stack[state.stack.length - 1];
-            state.current = {
-                x: state.direction > 0 ? -100 : width + 100,
-                y: last.y - CONFIG.BLOCK_HEIGHT - 4,
-                width: last.width,
-                placed: false
-            };
-            state.direction *= -1;
+        // ============================================================
+        // GAME LOOP
+        // ============================================================
+        function update() {
+            if (!state.playing) return;
+
+            if (state.current && !state.current.placed) {
+                state.current.x += state.speed * state.direction;
+                const halfWidth = state.current.width / 2;
+                if (state.current.x + halfWidth > width - 10) {
+                    state.current.x = width - halfWidth - 10;
+                    state.direction = -1;
+                } else if (state.current.x - halfWidth < 10) {
+                    state.current.x = halfWidth + 10;
+                    state.direction = 1;
+                }
+            }
+
+            state.cameraY += (state.targetCameraY - state.cameraY) * CONFIG.CAMERA_LERP;
+
+            state.falling = state.falling.filter(piece => {
+                piece.vy += 0.6;
+                piece.y += piece.vy;
+                piece.x += piece.vx;
+                piece.rotation += piece.rotationSpeed;
+                return piece.y < height + 150;
+            });
         }
 
-        function showPerfect() {
-            const el = document.getElementById('perfectIndicator');
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 700);
+        function render() {
+            ctx.clearRect(0, 0, width, height);
+
+            state.stack.forEach((block, i) => {
+                const screenY = block.y + state.cameraY;
+                if (screenY > height + CONFIG.BLOCK_HEIGHT || screenY < -CONFIG.BLOCK_HEIGHT * 2) return;
+                drawBlock(block.x, screenY, block.width, block.height, i, false);
+            });
+
+            if (state.current && !state.current.placed) {
+                const screenY = state.current.y + state.cameraY;
+                drawBlock(state.current.x, screenY, state.current.width, state.current.height, state.stack.length, true);
+            }
+
+            state.falling.forEach(piece => {
+                ctx.save();
+                ctx.translate(piece.x, piece.y + state.cameraY + piece.height / 2);
+                ctx.rotate(piece.rotation);
+                ctx.globalAlpha = 0.85;
+                const gradient = getGradient(ctx, piece.colorIndex, -piece.width / 2, -piece.height / 2, piece.width, piece.height);
+                roundRect(ctx, -piece.width / 2, -piece.height / 2, piece.width, piece.height, CONFIG.BORDER_RADIUS);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function gameLoop() {
+            update();
+            render();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // ============================================================
+        // GAME FLOW
+        // ============================================================
+        function startGame() {
+            console.log('Starting game...');
+            initAudio();
+
+            state.playing = true;
+            state.score = 0;
+            state.combo = 0;
+            state.maxCombo = 0;
+            state.perfects = 0;
+            state.speed = CONFIG.INITIAL_SPEED;
+            state.cameraY = 0;
+            state.targetCameraY = 0;
+            state.falling = [];
+            state.direction = 1;
+
+            state.stack = [{
+                x: centerX,
+                y: baseY,
+                width: CONFIG.INITIAL_WIDTH,
+                height: CONFIG.BLOCK_HEIGHT,
+                placed: true
+            }];
+
+            spawnNextBlock();
+            updateUI();
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.remove('visible');
+            document.getElementById('tapHint').style.display = 'block';
         }
 
         function gameOver() {
             state.playing = false;
+            state.current = null;
+            playSound('fail');
+
+            const isNewRecord = state.score > state.highScore;
+            if (isNewRecord) {
+                state.highScore = state.score;
+                localStorage.setItem('calveyStackHighScore', state.highScore.toString());
+            }
+
+            updateLeaderboard(state.score);
+            drawTowerGraphic(state.score, state.highScore);
+            updateUsernameDisplay();
+
+            const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            document.getElementById('quoteText').textContent = '"' + quote.text + '"';
+            document.getElementById('quoteAuthor').textContent = '— ' + quote.author;
+
             document.getElementById('finalScore').textContent = state.score;
-            document.getElementById('gameOverScreen').classList.add('visible');
+            document.getElementById('perfectCount').textContent = state.perfects;
+            document.getElementById('bestCombo').textContent = state.maxCombo;
             
-            if (state.score > state.globalBest) {
-                document.getElementById('newRecordBadge').classList.add('visible');
-            }
-            
-            if (state.username) syncScore(state.score);
-        }
-
-        function startGame() {
-            state.stack = [{ x: centerX, y: baseY, width: CONFIG.INITIAL_WIDTH, placed: true }];
-            state.score = 0;
-            state.speed = CONFIG.INITIAL_SPEED;
-            state.cameraY = 0; state.targetCameraY = 0;
-            state.playing = true;
-            document.getElementById('scoreValue').textContent = '0';
-            document.getElementById('startScreen').classList.add('hidden');
-            document.getElementById('gameOverScreen').classList.remove('visible');
-            spawnBlock();
-        }
-
-        // ============================================================
-        // CORE LOOP
-        // ============================================================
-        function loop() {
-            ctx.clearRect(0, 0, width, height);
-            state.cameraY += (state.targetCameraY - state.cameraY) * CONFIG.CAMERA_LERP;
-
-            if (state.playing) {
-                state.current.x += state.speed * state.direction;
-                if (state.current.x > width + 100 || state.current.x < -100) state.direction *= -1;
+            const badge = document.getElementById('newRecordBadge');
+            if (isNewRecord) {
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
             }
 
-            state.stack.forEach((b, i) => drawBlock(b.x, b.y + state.cameraY, b.width, CONFIG.BLOCK_HEIGHT, i));
-            if (state.playing) drawBlock(state.current.x, state.current.y + state.cameraY, state.current.width, CONFIG.BLOCK_HEIGHT, state.stack.length);
+            document.getElementById('tapHint').style.display = 'none';
 
-            requestAnimationFrame(loop);
+            setTimeout(() => {
+                document.getElementById('gameOverScreen').classList.add('visible');
+            }, 500);
         }
 
         // ============================================================
-        // INITIALIZATION
+        // EVENT HANDLERS
         // ============================================================
-        window.addEventListener('resize', resize);
-        resize();
+        function handleGameTap(e) {
+            if (e.target.closest('#soundToggle')) return;
+            if (!state.playing) return;
+            e.preventDefault();
+            placeBlock();
+        }
 
-        const input = document.getElementById('usernameInput');
-        const saveBtn = document.getElementById('saveUsernameBtn');
+        // Start screen click
+        document.getElementById('startScreen').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startGame();
+        });
 
-        saveBtn.addEventListener('click', () => {
+        // Game tap during play
+        document.getElementById('gameCanvas').addEventListener('click', handleGameTap);
+        document.getElementById('gameCanvas').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleGameTap(e);
+        });
+
+        // Tap restart
+        document.getElementById('tapRestart').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startGame();
+        });
+
+        // Also allow tapping anywhere on game over screen (except interactive elements)
+        document.getElementById('gameOverScreen').addEventListener('click', function(e) {
+            if (e.target.closest('.username-section')) return;
+            if (e.target.closest('.leaderboard-section')) return;
+            if (e.target.id === 'tapRestart') return;
+            startGame();
+        });
+
+        // Username handlers
+        document.getElementById('saveUsernameBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const input = document.getElementById('usernameInput');
             if (input.value.trim()) {
-                state.username = input.value.trim();
-                localStorage.setItem('calveyUsername', state.username);
-                updateUserUI();
-                if (state.score > 0) syncScore(state.score);
+                saveUsername(input.value);
+                updateLeaderboard(state.score);
             }
         });
 
-        function updateUserUI() {
-            if (state.username) {
-                document.getElementById('usernameInputArea').classList.add('hidden');
-                document.getElementById('usernameDisplayArea').classList.remove('hidden');
-                document.getElementById('currentUsername').textContent = state.username;
-            }
-        }
-
-        // Handle Taps
-        const handleInteraction = (e) => {
-            if (!state.playing && !document.getElementById('gameOverScreen').classList.contains('visible')) {
-                startGame();
-            } else if (state.playing) {
-                placeBlock();
-            }
-        };
-
-        window.addEventListener('touchstart', (e) => {
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
+        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
                 e.preventDefault();
-                handleInteraction();
-            }
-        }, { passive: false });
-
-        window.addEventListener('mousedown', (e) => {
-            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'BUTTON') {
-                handleInteraction();
+                const input = document.getElementById('usernameInput');
+                if (input.value.trim()) {
+                    saveUsername(input.value);
+                    updateLeaderboard(state.score);
+                }
             }
         });
 
-        document.getElementById('tapRestart').addEventListener('click', startGame);
+        document.getElementById('usernameInput').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
 
-        // Bootstrap
-        updateUserUI();
-        listenToLeaderboard();
-        loop();
+        document.getElementById('changeNameBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            document.getElementById('usernameInputArea').classList.remove('hidden');
+            document.getElementById('usernameDisplayArea').classList.add('hidden');
+            document.getElementById('usernameInput').value = state.username;
+            document.getElementById('usernameInput').focus();
+        });
 
-        // Migration: If they have a local high score from the old version, sync it!
-        const oldScore = localStorage.getItem('calveyStackHighScore');
-        if (oldScore && state.username) {
-            syncScore(parseInt(oldScore));
-        }
+        // Sound toggle
+        document.getElementById('soundBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            state.soundEnabled = !state.soundEnabled;
+            this.classList.toggle('off', !state.soundEnabled);
+            this.textContent = state.soundEnabled ? '♪' : '✕';
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        document.getElementById('highScoreValue').textContent = state.highScore;
+        updateUsernameDisplay();
+        loadGlobalLeaderboard();
+        gameLoop();
+
+        console.log('Game initialized with persistent leaderboard');
     </script>
 </body>
 </html>
