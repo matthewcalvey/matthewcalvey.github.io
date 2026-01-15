@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>ORBIT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Azeret+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #020812;
+            --deep: #051428;
+            --glow-primary: #00f5d4;
+            --glow-secondary: #7b2cbf;
+            --glow-tertiary: #f72585;
+            --glow-gold: #ffd60a;
+            --mist: rgba(0, 245, 212, 0.08);
+            --text: #e8f4f8;
+            --text-dim: #4a6670;
+        }
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: none;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        background: var(--void);
+        font-family: 'Azeret Mono', monospace;
+    }
+
+    /* Cosmic background */
+    #cosmos {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(ellipse at 20% 80%, rgba(123, 44, 191, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse at 80% 20%, rgba(0, 245, 212, 0.1) 0%, transparent 40%),
+            radial-gradient(ellipse at 50% 50%, var(--deep) 0%, var(--void) 100%);
+    }
+
+    /* Nebula particles */
+    .nebula-particle {
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        animation: drift 20s infinite ease-in-out;
+    }
+
+    @keyframes drift {
+        0%, 100% { transform: translate(0, 0) scale(1); opacity: 0; }
+        10% { opacity: 0.6; }
+        90% { opacity: 0.6; }
+        50% { transform: translate(30px, -50px) scale(1.2); }
+    }
+
+    /* Game canvas */
+    #gameCanvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 10;
+    }
+
+    /* UI Layer */
+    #ui {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    /* Header */
+    #header {
+        position: absolute;
+        top: env(safe-area-inset-top, 16px);
+        left: 16px;
+        right: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-top: 8px;
+    }
+
+    .stat-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .stat-label {
+        font-size: 8px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+    }
+
+    .stat-value {
+        font-family: 'Italiana', serif;
+        font-size: 28px;
+        color: var(--text);
+        line-height: 1;
+        text-shadow: 0 0 20px var(--glow-primary);
+    }
+
+    .stat-value.combo {
+        color: var(--glow-gold);
+        text-shadow: 0 0 20px var(--glow-gold);
+        transition: transform 0.15s;
+    }
+
+    .stat-value.combo.pulse {
+        transform: scale(1.2);
+    }
+
+    /* Orbit counter */
+    #orbitCounter {
+        text-align: center;
+    }
+
+    .orbit-rings {
+        display: flex;
+        gap: 6px;
+        justify-content: center;
+        margin-top: 4px;
+    }
+
+    .orbit-ring {
+        width: 8px;
+        height: 8px;
+        border: 1.5px solid var(--text-dim);
+        border-radius: 50%;
+        transition: all 0.3s;
+    }
+
+    .orbit-ring.complete {
+        background: var(--glow-primary);
+        border-color: var(--glow-primary);
+        box-shadow: 0 0 10px var(--glow-primary);
+    }
+
+    /* Controls */
+    #controls {
+        position: absolute;
+        top: env(safe-area-inset-top, 16px);
+        right: 16px;
+        display: flex;
+        gap: 8px;
+        pointer-events: auto;
+        padding-top: 8px;
+    }
+
+    .ctrl-btn {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--text-dim);
+        border-radius: 50%;
+        background: rgba(2, 8, 18, 0.8);
+        color: var(--text);
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        backdrop-filter: blur(10px);
+    }
+
+    .ctrl-btn:active {
+        transform: scale(0.9);
+        border-color: var(--glow-primary);
+        box-shadow: 0 0 15px var(--glow-primary);
+    }
+
+    .ctrl-btn.off {
+        color: var(--text-dim);
+    }
+
+    /* Level indicator */
+    #levelIndicator {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 60px);
+        left: 16px;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        color: var(--text-dim);
+    }
+
+    /* Energy bar */
+    #energyBar {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
+        left: 16px;
+        right: 16px;
+        height: 4px;
+        background: rgba(74, 102, 112, 0.3);
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    #energyFill {
+        height: 100%;
+        width: 100%;
+        background: linear-gradient(90deg, var(--glow-secondary), var(--glow-primary));
+        border-radius: 2px;
+        transition: width 0.3s ease-out;
+        box-shadow: 0 0 10px var(--glow-primary);
+    }
+
+    /* Launch power indicator */
+    #powerIndicator {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 35px);
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--glow-primary);
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    #powerIndicator.visible {
+        opacity: 1;
+    }
+
+    /* Tutorial */
+    #tutorial {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+
+    #tutorial.visible {
+        opacity: 1;
+    }
+
+    .tutorial-text {
+        font-size: 12px;
+        letter-spacing: 0.15em;
+        color: var(--text);
+        margin-bottom: 20px;
+    }
+
+    .tutorial-hand {
+        width: 60px;
+        height: 60px;
+        animation: pullBack 2s ease-in-out infinite;
+    }
+
+    @keyframes pullBack {
+        0%, 100% { transform: translate(0, 0); opacity: 0.5; }
+        30% { transform: translate(-40px, 40px); opacity: 1; }
+        50% { transform: translate(-40px, 40px); opacity: 1; }
+        80% { transform: translate(0, 0); opacity: 0.5; }
+    }
+
+    /* Start screen */
+    #startScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: var(--void);
+        padding: 2rem;
+    }
+
+    #startScreen.hidden {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.5s;
+    }
+
+    .game-title {
+        font-family: 'Italiana', serif;
+        font-size: clamp(4rem, 20vw, 8rem);
+        font-weight: 400;
+        letter-spacing: 0.3em;
+        color: var(--text);
+        text-shadow: 
+            0 0 40px var(--glow-primary),
+            0 0 80px rgba(0, 245, 212, 0.5);
+        animation: titleGlow 3s ease-in-out infinite alternate;
+        margin-bottom: 0.5rem;
+    }
+
+    @keyframes titleGlow {
+        0% { text-shadow: 0 0 40px var(--glow-primary), 0 0 80px rgba(0, 245, 212, 0.3); }
+        100% { text-shadow: 0 0 60px var(--glow-primary), 0 0 120px rgba(0, 245, 212, 0.6); }
+    }
+
+    .game-subtitle {
+        font-size: 10px;
+        letter-spacing: 0.4em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 4rem;
+        animation: fadeIn 1s ease-out 0.3s backwards;
+    }
+
+    .start-instructions {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+        animation: fadeIn 1s ease-out 0.5s backwards;
+    }
+
+    .instruction {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        font-size: 13px;
+        color: var(--text);
+        opacity: 0.85;
+    }
+
+    .instruction-icon {
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--text-dim);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .tap-start {
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        color: var(--glow-primary);
+        text-transform: uppercase;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Game over screen */
+    #gameOverScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: rgba(2, 8, 18, 0.95);
+        padding: 2rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+    }
+
+    #gameOverScreen.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .game-over-title {
+        font-family: 'Italiana', serif;
+        font-size: clamp(2rem, 10vw, 3.5rem);
+        color: var(--text);
+        letter-spacing: 0.15em;
+        margin-bottom: 0.5rem;
+    }
+
+    .final-score {
+        font-family: 'Italiana', serif;
+        font-size: clamp(4rem, 18vw, 6rem);
+        color: var(--glow-primary);
+        text-shadow: 0 0 40px var(--glow-primary);
+        line-height: 1;
+        margin: 1rem 0;
+    }
+
+    .score-details {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-align: center;
+        line-height: 1.8;
+        margin-bottom: 1.5rem;
+    }
+
+    .score-details span {
+        color: var(--text);
+    }
+
+    .new-best {
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: var(--glow-gold);
+        border: 1px solid var(--glow-gold);
+        padding: 8px 20px;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+        text-shadow: 0 0 10px var(--glow-gold);
+    }
+
+    .new-best.visible {
+        opacity: 1;
+    }
+
+    .tap-restart {
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        color: var(--text);
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Floating score popup */
+    .score-popup {
+        position: absolute;
+        font-family: 'Italiana', serif;
+        font-size: 20px;
+        color: var(--glow-primary);
+        text-shadow: 0 0 15px var(--glow-primary);
+        pointer-events: none;
+        z-index: 200;
+        animation: scoreFloat 0.8s ease-out forwards;
+    }
+
+    .score-popup.bonus {
+        color: var(--glow-gold);
+        text-shadow: 0 0 15px var(--glow-gold);
+        font-size: 26px;
+    }
+
+    @keyframes scoreFloat {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
+    }
+
+    /* Perfect orbit flash */
+    .perfect-flash {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, rgba(0, 245, 212, 0.2) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 50;
+        animation: flash 0.4s ease-out forwards;
+    }
+
+    @keyframes flash {
+        0% { opacity: 1; }
+        100% { opacity: 0; }
+    }
+
+    /* Near miss indicator */
+    .near-miss {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        letter-spacing: 0.2em;
+        color: var(--glow-tertiary);
+        text-shadow: 0 0 20px var(--glow-tertiary);
+        animation: nearMiss 1s ease-out forwards;
+        pointer-events: none;
+        z-index: 200;
+    }
+
+    @keyframes nearMiss {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1); }
+    }
+
+    /* Reward unlock notification */
+    .unlock-notification {
+        position: absolute;
+        top: 30%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(2, 8, 18, 0.9);
+        border: 1px solid var(--glow-gold);
+        padding: 16px 24px;
+        border-radius: 8px;
+        text-align: center;
+        z-index: 300;
+        animation: unlockSlide 2s ease-out forwards;
+        pointer-events: none;
+    }
+
+    @keyframes unlockSlide {
+        0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+        15% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        85% { opacity: 1; transform: translateX(-50%) translateY(0); }
+        100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    .unlock-title {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        color: var(--glow-gold);
+        margin-bottom: 6px;
+    }
+
+    .unlock-name {
+        font-family: 'Italiana', serif;
+        font-size: 18px;
+        color: var(--text);
+    }
+</style>
+```
+
+</head>
+<body>
+    <div id="cosmos"></div>
+
+```
+<canvas id="gameCanvas"></canvas>
+
+<div id="ui">
+    <!-- Header -->
+    <div id="header">
+        <div class="stat-group">
+            <span class="stat-label">Score</span>
+            <span class="stat-value" id="scoreDisplay">0</span>
+        </div>
+        
+        <div class="stat-group" id="orbitCounter">
+            <span class="stat-label">Orbits</span>
+            <div class="orbit-rings" id="orbitRings">
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+                <div class="orbit-ring"></div>
+            </div>
+        </div>
+        
+        <div class="stat-group" style="text-align: right;">
+            <span class="stat-label">Combo</span>
+            <span class="stat-value combo" id="comboDisplay">×1</span>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <button class="ctrl-btn" id="soundBtn" aria-label="Sound">♪</button>
+    </div>
+
+    <!-- Level indicator -->
+    <div id="levelIndicator">SECTOR 1</div>
+
+    <!-- Energy bar -->
+    <div id="energyBar">
+        <div id="energyFill"></div>
+    </div>
+
+    <!-- Power indicator -->
+    <div id="powerIndicator">POWER: 0%</div>
+
+    <!-- Tutorial -->
+    <div id="tutorial">
+        <p class="tutorial-text">PULL BACK & RELEASE</p>
+        <svg class="tutorial-hand" viewBox="0 0 60 60">
+            <circle cx="30" cy="30" r="12" fill="none" stroke="var(--glow-primary)" stroke-width="2"/>
+            <circle cx="30" cy="30" r="4" fill="var(--glow-primary)"/>
+            <path d="M30 18 L30 10 M30 50 L30 42 M18 30 L10 30 M50 30 L42 30" 
+                  stroke="var(--glow-primary)" stroke-width="1.5" opacity="0.5"/>
+        </svg>
+    </div>
+</div>
+
+<!-- Start screen -->
+<div id="startScreen">
+    <h1 class="game-title">ORBIT</h1>
+    <p class="game-subtitle">Gravitational Harmony</p>
+    
+    <div class="start-instructions">
+        <div class="instruction">
+            <div class="instruction-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <circle cx="10" cy="10" r="4" fill="var(--glow-primary)"/>
+                    <circle cx="10" cy="10" r="8" fill="none" stroke="var(--glow-primary)" stroke-width="1" stroke-dasharray="2 2"/>
+                </svg>
+            </div>
+            <span>Pull back to aim, release to launch</span>
+        </div>
+        <div class="instruction">
+            <div class="instruction-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <ellipse cx="10" cy="10" rx="8" ry="4" fill="none" stroke="var(--glow-secondary)" stroke-width="1.5" transform="rotate(-20 10 10)"/>
+                </svg>
+            </div>
+            <span>Create stable orbits around the star</span>
+        </div>
+        <div class="instruction">
+            <div class="instruction-icon">
+                <svg width="20" height="20" viewBox="0 0 20 20">
+                    <polygon points="10,2 12,8 18,8 13,12 15,18 10,14 5,18 7,12 2,8 8,8" 
+                             fill="var(--glow-gold)" opacity="0.8"/>
+                </svg>
+            </div>
+            <span>Chain perfect orbits for combos</span>
+        </div>
+    </div>
+
+    <p class="tap-start">Tap to Launch</p>
+</div>
+
+<!-- Game over screen -->
+<div id="gameOverScreen">
+    <h2 class="game-over-title">Orbit Decayed</h2>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="score-details">
+        Perfect orbits: <span id="perfectOrbits">0</span><br>
+        Max combo: <span id="maxCombo">×1</span><br>
+        Sectors explored: <span id="sectorsExplored">1</span>
+    </div>
+    <div class="new-best" id="newBestBadge">★ NEW RECORD ★</div>
+    <p class="tap-restart">Tap to Relaunch</p>
+</div>
+
+<script>
+    // ═══════════════════════════════════════════════════════════════
+    // GAME CONFIGURATION
+    // ═══════════════════════════════════════════════════════════════
+    
+    const CONFIG = {
+        // Physics
+        GRAVITY_CONSTANT: 800,
+        LAUNCH_POWER_SCALE: 0.4,
+        MAX_LAUNCH_POWER: 400,
+        ORBIT_DECAY: 0.9997,
+        MIN_VELOCITY: 15,
+        
+        // Gameplay
+        PERFECT_ORBIT_THRESHOLD: 0.15,
+        GOOD_ORBIT_THRESHOLD: 0.3,
+        NEAR_MISS_THRESHOLD: 0.4,
+        ORBIT_COMPLETE_ANGLE: Math.PI * 1.9,
+        
+        // Scoring (variable ratio reinforcement)
+        BASE_ORBIT_SCORE: 100,
+        PERFECT_BONUS: 3,
+        COMBO_MULTIPLIER_CAP: 10,
+        
+        // Progression
+        SECTOR_SCORE_THRESHOLD: 500,
+        
+        // Visual
+        TRAIL_LENGTH: 40,
+        PARTICLE_COUNT: 12,
+        
+        // Star properties per sector
+        STAR_CONFIGS: [
+            { radius: 35, color: '#00f5d4', glowColor: 'rgba(0, 245, 212, 0.4)' },
+            { radius: 40, color: '#7b2cbf', glowColor: 'rgba(123, 44, 191, 0.4)' },
+            { radius: 32, color: '#f72585', glowColor: 'rgba(247, 37, 133, 0.4)' },
+            { radius: 45, color: '#ffd60a', glowColor: 'rgba(255, 214, 10, 0.4)' },
+            { radius: 38, color: '#4cc9f0', glowColor: 'rgba(76, 201, 240, 0.4)' },
+        ]
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // GAME STATE
+    // ═══════════════════════════════════════════════════════════════
+    
+    const state = {
+        isPlaying: false,
+        isDragging: false,
+        soundEnabled: true,
+        
+        // Scores
+        score: 0,
+        combo: 1,
+        maxCombo: 1,
+        perfectOrbits: 0,
+        totalOrbits: 0,
+        highScore: parseInt(localStorage.getItem('orbitHighScore') || '0'),
+        
+        // Level
+        sector: 1,
+        sectorProgress: 0,
+        
+        // Player (the launched object)
+        player: null,
+        
+        // Star (gravity well)
+        star: {
+            x: 0,
+            y: 0,
+            radius: 35,
+            color: '#00f5d4',
+            glowColor: 'rgba(0, 245, 212, 0.4)',
+            mass: 1
+        },
+        
+        // Launch mechanics
+        launchStart: { x: 0, y: 0 },
+        launchEnd: { x: 0, y: 0 },
+        launchPower: 0,
+        
+        // Orbit tracking
+        orbitAngle: 0,
+        lastAngle: 0,
+        orbitDirection: 0,
+        orbitsCompleted: 0,
+        currentOrbitQuality: 0,
+        
+        // Trail
+        trail: [],
+        
+        // Particles
+        particles: [],
+        
+        // Tutorial
+        tutorialShown: false,
+        
+        // Unlocks (cosmetic rewards)
+        unlockedColors: ['#00f5d4'],
+        playerColorIndex: 0
+    };
+
+    // ═══════════════════════════════════════════════════════════════
+    // CANVAS & AUDIO SETUP
+    // ═══════════════════════════════════════════════════════════════
+    
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let audioCtx = null;
+
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = window.innerWidth * dpr;
+        canvas.height = window.innerHeight * dpr;
+        canvas.style.width = window.innerWidth + 'px';
+        canvas.style.height = window.innerHeight + 'px';
+        ctx.scale(dpr, dpr);
+        
+        // Center the star
+        state.star.x = window.innerWidth / 2;
+        state.star.y = window.innerHeight / 2;
+    }
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playSound(type, pitch = 1) {
+        if (!state.soundEnabled || !audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        switch(type) {
+            case 'launch':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(220 * pitch, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(440 * pitch, audioCtx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+                break;
+                
+            case 'orbit':
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523 * pitch, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659 * pitch, audioCtx.currentTime + 0.08);
+                osc.frequency.setValueAtTime(784 * pitch, audioCtx.currentTime + 0.16);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+                break;
+                
+            case 'perfect':
+                osc.type = 'sine';
+                const notes = [523, 659, 784, 1047];
+                notes.forEach((freq, i) => {
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.08);
+                });
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+                break;
+                
+            case 'fail':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+                break;
+                
+            case 'nearMiss':
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(250, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+                break;
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PHYSICS
+    // ═══════════════════════════════════════════════════════════════
+    
+    function createPlayer(x, y, vx, vy) {
+        return {
+            x, y, vx, vy,
+            radius: 8,
+            color: state.unlockedColors[state.playerColorIndex],
+            alive: true
+        };
+    }
+
+    function updatePhysics(dt) {
+        if (!state.player || !state.player.alive) return;
+        
+        const p = state.player;
+        const s = state.star;
+        
+        // Calculate gravity
+        const dx = s.x - p.x;
+        const dy = s.y - p.y;
+        const distSq = dx * dx + dy * dy;
+        const dist = Math.sqrt(distSq);
+        
+        // Check collision with star
+        if (dist < s.radius + p.radius) {
+            playerDied('collision');
+            return;
+        }
+        
+        // Gravitational force
+        const force = CONFIG.GRAVITY_CONSTANT * s.mass / distSq;
+        const ax = force * dx / dist;
+        const ay = force * dy / dist;
+        
+        // Update velocity
+        p.vx += ax * dt;
+        p.vy += ay * dt;
+        
+        // Apply decay (simulates energy loss)
+        p.vx *= CONFIG.ORBIT_DECAY;
+        p.vy *= CONFIG.ORBIT_DECAY;
+        
+        // Update position
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        
+        // Check if escaped or too slow
+        const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+        if (dist > Math.max(window.innerWidth, window.innerHeight)) {
+            playerDied('escaped');
+            return;
+        }
+        if (speed < CONFIG.MIN_VELOCITY && dist > s.radius * 3) {
+            playerDied('decay');
+            return;
+        }
+        
+        // Track orbit
+        trackOrbit(dx, dy, dist);
+        
+        // Update trail
+        state.trail.push({ x: p.x, y: p.y, age: 0 });
+        if (state.trail.length > CONFIG.TRAIL_LENGTH) {
+            state.trail.shift();
+        }
+        state.trail.forEach(t => t.age++);
+    }
+
+    function trackOrbit(dx, dy, dist) {
+        const angle = Math.atan2(dy, dx);
+        
+        // Determine direction on first angle reading
+        if (state.orbitDirection === 0 && state.lastAngle !== 0) {
+            let diff = angle - state.lastAngle;
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            state.orbitDirection = diff > 0 ? 1 : -1;
+        }
+        
+        // Track cumulative angle
+        if (state.lastAngle !== 0) {
+            let diff = angle - state.lastAngle;
+            if (diff > Math.PI) diff -= Math.PI * 2;
+            if (diff < -Math.PI) diff += Math.PI * 2;
+            
+            // Only count if going in the established direction
+            if ((diff > 0 && state.orbitDirection > 0) || (diff < 0 && state.orbitDirection < 0)) {
+                state.orbitAngle += Math.abs(diff);
+            }
+        }
+        
+        state.lastAngle = angle;
+        
+        // Track orbit quality (how circular)
+        const idealDist = state.star.radius * 3;
+        const deviation = Math.abs(dist - idealDist) / idealDist;
+        state.currentOrbitQuality = 1 - Math.min(deviation, 1);
+        
+        // Check for completed orbit
+        if (state.orbitAngle >= CONFIG.ORBIT_COMPLETE_ANGLE) {
+            completeOrbit();
+        }
+    }
+
+    function completeOrbit() {
+        state.orbitsCompleted++;
+        state.totalOrbits++;
+        state.orbitAngle = 0;
+        
+        // Determine orbit quality
+        const quality = state.currentOrbitQuality;
+        let points = CONFIG.BASE_ORBIT_SCORE;
+        let isPerfect = false;
+        
+        if (quality >= 1 - CONFIG.PERFECT_ORBIT_THRESHOLD) {
+            isPerfect = true;
+            state.perfectOrbits++;
+            points *= CONFIG.PERFECT_BONUS;
+            state.combo = Math.min(state.combo + 1, CONFIG.COMBO_MULTIPLIER_CAP);
+            playSound('perfect');
+            showPerfectFlash();
+        } else if (quality >= 1 - CONFIG.GOOD_ORBIT_THRESHOLD) {
+            state.combo = Math.min(state.combo + 1, CONFIG.COMBO_MULTIPLIER_CAP);
+            playSound('orbit', 1 + state.combo * 0.1);
+        } else {
+            state.combo = 1;
+            playSound('orbit', 0.8);
+        }
+        
+        points *= state.combo;
+        state.score += Math.round(points);
+        
+        if (state.combo > state.maxCombo) {
+            state.maxCombo = state.combo;
+        }
+        
+        // Spawn particles
+        spawnOrbitParticles(isPerfect);
+        
+        // Show score popup
+        showScorePopup(points, isPerfect);
+        
+        // Update UI
+        updateUI();
+        updateOrbitRings();
+        
+        // Check sector progression
+        checkSectorProgress();
+    }
+
+    function playerDied(reason) {
+        if (!state.player) return;
+        state.player.alive = false;
+        
+        // Near miss detection (almost made it)
+        if (reason === 'decay' && state.orbitAngle > CONFIG.ORBIT_COMPLETE_ANGLE * (1 - CONFIG.NEAR_MISS_THRESHOLD)) {
+            showNearMiss();
+            playSound('nearMiss');
+        } else {
+            playSound('fail');
+        }
+        
+        // Spawn death particles
+        spawnDeathParticles();
+        
+        // Check for game over vs reset for next launch
+        setTimeout(() => {
+            if (state.orbitsCompleted === 0 && state.totalOrbits === 0) {
+                // First launch failed - just reset
+                resetLaunch();
+            } else {
+                gameOver();
+            }
+        }, 500);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // RENDERING
+    // ═══════════════════════════════════════════════════════════════
+    
+    function render() {
+        ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        
+        // Draw star glow
+        drawStarGlow();
+        
+        // Draw orbit guide (when aiming)
+        if (state.isDragging) {
+            drawAimLine();
+        }
+        
+        // Draw trail
+        drawTrail();
+        
+        // Draw particles
+        drawParticles();
+        
+        // Draw star
+        drawStar();
+        
+        // Draw player
+        drawPlayer();
+    }
+
+    function drawStarGlow() {
+        const s = state.star;
+        
+        // Outer glow
+        const gradient = ctx.createRadialGradient(s.x, s.y, s.radius, s.x, s.y, s.radius * 4);
+        gradient.addColorStop(0, s.glowColor);
+        gradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius * 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Pulsing inner glow
+        const pulse = 1 + Math.sin(Date.now() * 0.003) * 0.1;
+        const innerGradient = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius * 2 * pulse);
+        innerGradient.addColorStop(0, s.color);
+        innerGradient.addColorStop(0.5, s.glowColor);
+        innerGradient.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = innerGradient;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius * 2 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function drawStar() {
+        const s = state.star;
+        
+        ctx.fillStyle = s.color;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 30;
+        
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+        
+        // Inner highlight
+        const highlight = ctx.createRadialGradient(
+            s.x - s.radius * 0.3, s.y - s.radius * 0.3, 0,
+            s.x, s.y, s.radius
+        );
+        highlight.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+        highlight.addColorStop(1, 'transparent');
+        
+        ctx.fillStyle = highlight;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    function drawPlayer() {
+        if (!state.player) return;
+        
+        const p = state.player;
+        
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = 20;
+        
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.shadowBlur = 0;
+    }
+
+    function drawTrail() {
+        if (state.trail.length < 2) return;
+        
+        ctx.lineCap = 'round';
+        
+        for (let i = 1; i < state.trail.length; i++) {
+            const t0 = state.trail[i - 1];
+            const t1 = state.trail[i];
+            const alpha = (i / state.trail.length) * 0.6;
+            const width = (i / state.trail.length) * 4;
+            
+            ctx.strokeStyle = `rgba(0, 245, 212, ${alpha})`;
+            ctx.lineWidth = width;
+            
+            ctx.beginPath();
+            ctx.moveTo(t0.x, t0.y);
+            ctx.lineTo(t1.x, t1.y);
+            ctx.stroke();
+        }
+    }
+
+    function drawAimLine() {
+        const start = state.launchStart;
+        const end = state.launchEnd;
+        
+        // Calculate launch direction (opposite of drag)
+        const dx = start.x - end.x;
+        const dy = start.y - end.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 10) return;
+        
+        const power = Math.min(dist * CONFIG.LAUNCH_POWER_SCALE, CONFIG.MAX_LAUNCH_POWER);
+        const angle = Math.atan2(dy, dx);
+        
+        // Draw power line
+        ctx.strokeStyle = `rgba(0, 245, 212, ${0.3 + power / CONFIG.MAX_LAUNCH_POWER * 0.5})`;
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(start.x + Math.cos(angle) * power * 0.5, start.y + Math.sin(angle) * power * 0.5);
+        ctx.stroke();
+        
+        ctx.setLineDash([]);
+        
+        // Draw launch point
+        ctx.fillStyle = 'rgba(0, 245, 212, 0.8)';
+        ctx.beginPath();
+        ctx.arc(start.x, start.y, 6, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Draw drag point
+        ctx.strokeStyle = 'rgba(0, 245, 212, 0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.arc(end.x, end.y, 12, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+
+    function drawParticles() {
+        state.particles = state.particles.filter(p => {
+            p.life -= 0.02;
+            if (p.life <= 0) return false;
+            
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vx *= 0.98;
+            p.vy *= 0.98;
+            
+            ctx.fillStyle = `rgba(${p.r}, ${p.g}, ${p.b}, ${p.life})`;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+            ctx.fill();
+            
+            return true;
+        });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // VISUAL EFFECTS
+    // ═══════════════════════════════════════════════════════════════
+    
+    function spawnOrbitParticles(isPerfect) {
+        const count = isPerfect ? CONFIG.PARTICLE_COUNT * 2 : CONFIG.PARTICLE_COUNT;
+        const color = isPerfect ? { r: 255, g: 214, b: 10 } : { r: 0, g: 245, b: 212 };
+        
+        for (let i = 0; i < count; i++) {
+            const angle = (Math.PI * 2 / count) * i;
+            const speed = 2 + Math.random() * 3;
+            
+            state.particles.push({
+                x: state.player.x,
+                y: state.player.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 3 + Math.random() * 3,
+                life: 1,
+                ...color
+            });
+        }
+    }
+
+    function spawnDeathParticles() {
+        if (!state.player) return;
+        
+        for (let i = 0; i < 20; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 1 + Math.random() * 4;
+            
+            state.particles.push({
+                x: state.player.x,
+                y: state.player.y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 2 + Math.random() * 4,
+                life: 1,
+                r: 247, g: 37, b: 133
+            });
+        }
+    }
+
+    function showPerfectFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'perfect-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 400);
+    }
+
+    function showNearMiss() {
+        const el = document.createElement('div');
+        el.className = 'near-miss';
+        el.textContent = 'SO CLOSE!';
+        document.getElementById('ui').appendChild(el);
+        setTimeout(() => el.remove(), 1000);
+    }
+
+    function showScorePopup(points, isBonus) {
+        const popup = document.createElement('div');
+        popup.className = 'score-popup' + (isBonus ? ' bonus' : '');
+        popup.textContent = '+' + Math.round(points);
+        popup.style.left = state.player.x + 'px';
+        popup.style.top = state.player.y + 'px';
+        document.getElementById('ui').appendChild(popup);
+        setTimeout(() => popup.remove(), 800);
+    }
+
+    function showUnlockNotification(name) {
+        const notification = document.createElement('div');
+        notification.className = 'unlock-notification';
+        notification.innerHTML = `
+            <div class="unlock-title">NEW SECTOR UNLOCKED</div>
+            <div class="unlock-name">${name}</div>
+        `;
+        document.getElementById('ui').appendChild(notification);
+        setTimeout(() => notification.remove(), 2000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // UI UPDATES
+    // ═══════════════════════════════════════════════════════════════
+    
+    function updateUI() {
+        document.getElementById('scoreDisplay').textContent = state.score.toLocaleString();
+        
+        const comboEl = document.getElementById('comboDisplay');
+        comboEl.textContent = '×' + state.combo;
+        comboEl.classList.add('pulse');
+        setTimeout(() => comboEl.classList.remove('pulse'), 150);
+        
+        // Energy bar represents orbit progress
+        const progress = Math.min(state.orbitAngle / CONFIG.ORBIT_COMPLETE_ANGLE * 100, 100);
+        document.getElementById('energyFill').style.width = progress + '%';
+    }
+
+    function updateOrbitRings() {
+        const rings = document.querySelectorAll('.orbit-ring');
+        const completed = state.orbitsCompleted % 5;
+        
+        rings.forEach((ring, i) => {
+            ring.classList.toggle('complete', i < completed);
+        });
+    }
+
+    function updatePowerIndicator(power) {
+        const indicator = document.getElementById('powerIndicator');
+        const percent = Math.round((power / CONFIG.MAX_LAUNCH_POWER) * 100);
+        indicator.textContent = `POWER: ${percent}%`;
+        indicator.classList.toggle('visible', power > 0);
+    }
+
+    function checkSectorProgress() {
+        const newSector = Math.floor(state.score / CONFIG.SECTOR_SCORE_THRESHOLD) + 1;
+        
+        if (newSector > state.sector && newSector <= CONFIG.STAR_CONFIGS.length) {
+            state.sector = newSector;
+            
+            // Update star appearance
+            const config = CONFIG.STAR_CONFIGS[state.sector - 1];
+            state.star.radius = config.radius;
+            state.star.color = config.color;
+            state.star.glowColor = config.glowColor;
+            
+            document.getElementById('levelIndicator').textContent = `SECTOR ${state.sector}`;
+            
+            // Show unlock notification
+            const sectorNames = ['Genesis', 'Nebula', 'Pulsar', 'Quasar', 'Singularity'];
+            showUnlockNotification(sectorNames[state.sector - 1]);
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INPUT HANDLING
+    // ═══════════════════════════════════════════════════════════════
+    
+    function handleTouchStart(x, y) {
+        if (!state.isPlaying) return;
+        if (state.player && state.player.alive) return;
+        
+        initAudio();
+        state.isDragging = true;
+        state.launchStart = { x, y };
+        state.launchEnd = { x, y };
+        
+        // Hide tutorial
+        if (!state.tutorialShown) {
+            state.tutorialShown = true;
+            document.getElementById('tutorial').classList.remove('visible');
+        }
+    }
+
+    function handleTouchMove(x, y) {
+        if (!state.isDragging) return;
+        
+        state.launchEnd = { x, y };
+        
+        const dx = state.launchStart.x - x;
+        const dy = state.launchStart.y - y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        state.launchPower = Math.min(dist * CONFIG.LAUNCH_POWER_SCALE, CONFIG.MAX_LAUNCH_POWER);
+        
+        updatePowerIndicator(state.launchPower);
+    }
+
+    function handleTouchEnd() {
+        if (!state.isDragging) return;
+        state.isDragging = false;
+        
+        updatePowerIndicator(0);
+        
+        if (state.launchPower < 20) return;
+        
+        // Calculate launch velocity
+        const dx = state.launchStart.x - state.launchEnd.x;
+        const dy = state.launchStart.y - state.launchEnd.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 10) return;
+        
+        const power = state.launchPower;
+        const vx = (dx / dist) * power;
+        const vy = (dy / dist) * power;
+        
+        // Create player at launch point
+        state.player = createPlayer(state.launchStart.x, state.launchStart.y, vx, vy);
+        state.trail = [];
+        state.orbitAngle = 0;
+        state.lastAngle = 0;
+        state.orbitDirection = 0;
+        state.currentOrbitQuality = 0;
+        
+        playSound('launch', 0.8 + power / CONFIG.MAX_LAUNCH_POWER * 0.4);
+    }
+
+    // Event listeners
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleTouchStart(touch.clientX, touch.clientY);
+    });
+
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        handleTouchMove(touch.clientX, touch.clientY);
+    });
+
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        handleTouchEnd();
+    });
+
+    // Mouse support for testing
+    canvas.addEventListener('mousedown', (e) => {
+        handleTouchStart(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        handleTouchMove(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener('mouseup', handleTouchEnd);
+    canvas.addEventListener('mouseleave', handleTouchEnd);
+
+    // ═══════════════════════════════════════════════════════════════
+    // GAME FLOW
+    // ═══════════════════════════════════════════════════════════════
+    
+    function startGame() {
+        initAudio();
+        
+        state.isPlaying = true;
+        state.score = 0;
+        state.combo = 1;
+        state.maxCombo = 1;
+        state.perfectOrbits = 0;
+        state.totalOrbits = 0;
+        state.orbitsCompleted = 0;
+        state.sector = 1;
+        state.player = null;
+        state.trail = [];
+        state.particles = [];
+        state.tutorialShown = false;
+        
+        // Reset star
+        const config = CONFIG.STAR_CONFIGS[0];
+        state.star.radius = config.radius;
+        state.star.color = config.color;
+        state.star.glowColor = config.glowColor;
+        
+        updateUI();
+        updateOrbitRings();
+        document.getElementById('levelIndicator').textContent = 'SECTOR 1';
+        
+        document.getElementById('startScreen').classList.add('hidden');
+        document.getElementById('gameOverScreen').classList.remove('visible');
+        
+        // Show tutorial
+        setTimeout(() => {
+            if (!state.tutorialShown) {
+                document.getElementById('tutorial').classList.add('visible');
+            }
+        }, 500);
+    }
+
+    function resetLaunch() {
+        state.player = null;
+        state.trail = [];
+        state.orbitAngle = 0;
+        state.orbitsCompleted = 0;
+        updateOrbitRings();
+    }
+
+    function gameOver() {
+        state.isPlaying = false;
+        
+        // Check high score
+        const isNewBest = state.score > state.highScore;
+        if (isNewBest) {
+            state.highScore = state.score;
+            localStorage.setItem('orbitHighScore', state.highScore.toString());
+        }
+        
+        // Update game over screen
+        document.getElementById('finalScore').textContent = state.score.toLocaleString();
+        document.getElementById('perfectOrbits').textContent = state.perfectOrbits;
+        document.getElementById('maxCombo').textContent = '×' + state.maxCombo;
+        document.getElementById('sectorsExplored').textContent = state.sector;
+        document.getElementById('newBestBadge').classList.toggle('visible', isNewBest);
+        
+        setTimeout(() => {
+            document.getElementById('gameOverScreen').classList.add('visible');
+        }, 300);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // GAME LOOP
+    // ═══════════════════════════════════════════════════════════════
+    
+    let lastTime = 0;
+    
+    function gameLoop(timestamp) {
+        const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+        lastTime = timestamp;
+        
+        if (state.isPlaying && state.player && state.player.alive) {
+            updatePhysics(dt);
+        }
+        
+        render();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════
+    
+    // Sound button
+    document.getElementById('soundBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        state.soundEnabled = !state.soundEnabled;
+        e.target.classList.toggle('off', !state.soundEnabled);
+        e.target.textContent = state.soundEnabled ? '♪' : '♪̸';
+    });
+
+    // Start/restart handlers
+    document.getElementById('startScreen').addEventListener('click', startGame);
+    document.getElementById('startScreen').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    document.getElementById('gameOverScreen').addEventListener('click', startGame);
+    document.getElementById('gameOverScreen').addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    // Create nebula particles
+    function createNebulaParticles() {
+        const cosmos = document.getElementById('cosmos');
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'nebula-particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.width = (2 + Math.random() * 4) + 'px';
+            particle.style.height = particle.style.width;
+            particle.style.background = Math.random() > 0.5 ? 
+                'rgba(0, 245, 212, 0.6)' : 'rgba(123, 44, 191, 0.6)';
+            particle.style.animationDelay = (Math.random() * 20) + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            cosmos.appendChild(particle);
+        }
+    }
+
+    // Initialize
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    createNebulaParticles();
+    requestAnimationFrame(gameLoop);
+
+    // Prevent default touch behaviors
+    document.addEventListener('touchmove', (e) => {
+        if (state.isPlaying) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+</script>
+```
+
+</body>
+</html>
