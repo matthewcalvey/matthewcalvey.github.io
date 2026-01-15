@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>FORM RUNNER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-mid: #141414;
+            --cream: #f5f0e8;
+            --accent: #c9a959;
+            --accent-glow: #d4b76a;
+            --danger: #8b3a3a;
+            --danger-glow: #a04545;
+            --muted: #4a4a4a;
+            --success: #4a6b4a;
+        }
+
+```
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        position: fixed;
+        background: var(--bg-dark);
+    }
+
+    body {
+        font-family: 'Cormorant Garamond', serif;
+        color: var(--cream);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Grain overlay */
+    .grain {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        opacity: 0.035;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+        z-index: 10000;
+    }
+
+    /* Game container */
+    #gameContainer {
+        width: 100%;
+        height: 100%;
+        max-width: 500px;
+        max-height: 100vh;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
+    }
+
+    /* Header UI */
+    #header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        padding: env(safe-area-inset-top, 12px) 16px 8px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .score-display {
+        text-align: left;
+    }
+
+    .score-label {
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 2px;
+    }
+
+    .score-value {
+        font-size: 32px;
+        font-weight: 300;
+        letter-spacing: 0.05em;
+        color: var(--cream);
+        line-height: 1;
+    }
+
+    .multiplier {
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        color: var(--accent);
+        margin-top: 4px;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .multiplier.active {
+        opacity: 1;
+    }
+
+    .streak-display {
+        text-align: right;
+    }
+
+    .streak-bar {
+        width: 80px;
+        height: 4px;
+        background: var(--muted);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-top: 6px;
+    }
+
+    .streak-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+        transition: width 0.15s ease-out;
+    }
+
+    /* Control buttons */
+    .controls {
+        position: absolute;
+        top: env(safe-area-inset-top, 12px);
+        right: 12px;
+        display: flex;
+        gap: 8px;
+        z-index: 200;
+        pointer-events: auto;
+    }
+
+    .control-btn {
+        width: 36px;
+        height: 36px;
+        border: 1px solid var(--muted);
+        border-radius: 4px;
+        background: rgba(10, 10, 10, 0.8);
+        color: var(--cream);
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+    .control-btn:active {
+        transform: scale(0.95);
+        border-color: var(--accent);
+    }
+
+    .control-btn.muted {
+        color: var(--muted);
+    }
+
+    /* Game canvas area */
+    #gameArea {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Player */
+    #player {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        transition: left 0.08s ease-out, transform 0.08s;
+        z-index: 50;
+        filter: drop-shadow(0 0 12px rgba(201, 169, 89, 0.4));
+    }
+
+    #player.hit {
+        animation: playerHit 0.15s ease-out;
+    }
+
+    @keyframes playerHit {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(0.85); filter: brightness(2); }
+    }
+
+    /* Ground line */
+    #ground {
+        position: absolute;
+        bottom: 20%;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--muted), transparent);
+    }
+
+    /* Lane indicators */
+    .lane-indicator {
+        position: absolute;
+        bottom: 20%;
+        width: 2px;
+        height: 100px;
+        background: linear-gradient(180deg, transparent, var(--muted), transparent);
+        opacity: 0.3;
+    }
+
+    /* Obstacles and collectibles */
+    .game-object {
+        position: absolute;
+        z-index: 40;
+        transition: transform 0.05s;
+    }
+
+    .obstacle {
+        filter: drop-shadow(0 0 8px rgba(139, 58, 58, 0.5));
+    }
+
+    .collectible {
+        filter: drop-shadow(0 0 10px rgba(201, 169, 89, 0.6));
+        animation: float 1.5s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .collected {
+        animation: collect 0.25s ease-out forwards;
+    }
+
+    @keyframes collect {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(2); opacity: 0; }
+    }
+
+    /* Particles */
+    .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: var(--accent);
+        border-radius: 1px;
+        pointer-events: none;
+        z-index: 60;
+    }
+
+    /* Screen shake */
+    .shake {
+        animation: shake 0.15s ease-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-4px); }
+        75% { transform: translateX(4px); }
+    }
+
+    /* Start screen */
+    #startScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: var(--bg-dark);
+        padding: 2rem;
+    }
+
+    #startScreen.hidden {
+        display: none;
+    }
+
+    .title {
+        font-size: clamp(2rem, 10vw, 3.5rem);
+        font-weight: 300;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: var(--cream);
+        text-align: center;
+        margin-bottom: 0.5rem;
+        animation: fadeIn 1s ease-out;
+    }
+
+    .subtitle {
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.25em;
+        color: var(--muted);
+        text-transform: uppercase;
+        margin-bottom: 3rem;
+        animation: fadeIn 1s ease-out 0.2s backwards;
+    }
+
+    .start-instructions {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        animation: fadeIn 1s ease-out 0.4s backwards;
+    }
+
+    .instruction-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: var(--cream);
+        opacity: 0.8;
+    }
+
+    .instruction-icon {
+        width: 40px;
+        height: 40px;
+        border: 1px solid var(--muted);
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tap-to-start {
+        margin-top: 3rem;
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        color: var(--accent);
+        text-transform: uppercase;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Game over screen */
+    #gameOverScreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 500;
+        background: rgba(10, 10, 10, 0.95);
+        padding: 2rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+    }
+
+    #gameOverScreen.visible {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .game-over-title {
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
+        font-weight: 300;
+        letter-spacing: 0.2em;
+        color: var(--cream);
+        margin-bottom: 0.5rem;
+    }
+
+    .final-score {
+        font-size: clamp(3rem, 15vw, 5rem);
+        font-weight: 300;
+        color: var(--accent);
+        margin: 1rem 0;
+        line-height: 1;
+    }
+
+    .score-breakdown {
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        color: var(--muted);
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .score-breakdown span {
+        color: var(--cream);
+    }
+
+    .best-score-badge {
+        font-family: 'Space Mono', monospace;
+        font-size: 10px;
+        letter-spacing: 0.2em;
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        padding: 6px 16px;
+        border-radius: 2px;
+        margin-bottom: 2rem;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .best-score-badge.visible {
+        opacity: 1;
+    }
+
+    .tap-to-restart {
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        letter-spacing: 0.3em;
+        color: var(--cream);
+        text-transform: uppercase;
+        animation: pulse 2s ease-in-out infinite;
+        margin-top: 1rem;
+    }
+
+    /* Tutorial overlay */
+    #tutorial {
+        position: absolute;
+        bottom: 25%;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 300;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #tutorial.visible {
+        opacity: 1;
+    }
+
+    .tutorial-hand {
+        width: 40px;
+        height: 40px;
+        animation: swipeHint 2s ease-in-out infinite;
+    }
+
+    @keyframes swipeHint {
+        0%, 100% { transform: translateX(-30px); opacity: 0.5; }
+        50% { transform: translateX(30px); opacity: 1; }
+    }
+
+    /* Speed lines */
+    .speed-line {
+        position: absolute;
+        width: 2px;
+        height: 30px;
+        background: linear-gradient(180deg, var(--muted), transparent);
+        opacity: 0.3;
+        z-index: 5;
+    }
+
+    /* Progress meter */
+    #progressMeter {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 8px);
+        left: 16px;
+        right: 16px;
+        height: 3px;
+        background: var(--muted);
+        border-radius: 1.5px;
+        overflow: hidden;
+        z-index: 100;
+    }
+
+    #progressFill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+        transition: width 0.1s;
+    }
+
+    /* Level indicator */
+    #levelIndicator {
+        position: absolute;
+        bottom: calc(env(safe-area-inset-bottom, 20px) + 20px);
+        left: 16px;
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.15em;
+        color: var(--muted);
+        z-index: 100;
+    }
+
+    /* Combo popup */
+    .combo-popup {
+        position: absolute;
+        font-family: 'Space Mono', monospace;
+        font-size: 14px;
+        color: var(--accent);
+        pointer-events: none;
+        z-index: 200;
+        animation: comboFloat 0.6s ease-out forwards;
+    }
+
+    @keyframes comboFloat {
+        0% { transform: translateY(0) scale(1); opacity: 1; }
+        100% { transform: translateY(-40px) scale(1.2); opacity: 0; }
+    }
+
+    /* High score display */
+    .high-score {
+        position: absolute;
+        top: 70px;
+        left: 16px;
+        font-family: 'Space Mono', monospace;
+        font-size: 9px;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        z-index: 100;
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="grain"></div>
+
+```
+<div id="gameContainer">
+    <!-- Header UI -->
+    <div id="header">
+        <div class="score-display">
+            <div class="score-label">Score</div>
+            <div class="score-value" id="scoreValue">0</div>
+            <div class="multiplier" id="multiplier">×2</div>
+        </div>
+        <div class="streak-display">
+            <div class="score-label">Streak</div>
+            <div class="score-value" id="streakValue" style="font-size: 20px;">0</div>
+            <div class="streak-bar">
+                <div class="streak-fill" id="streakFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="high-score" id="highScoreDisplay">BEST: 0</div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn" id="muteBtn" aria-label="Toggle sound">♪</button>
+        <button class="control-btn" id="pauseBtn" aria-label="Pause">❚❚</button>
+    </div>
+
+    <!-- Game area -->
+    <div id="gameArea">
+        <!-- Lane indicators -->
+        <div class="lane-indicator" style="left: 33.33%;"></div>
+        <div class="lane-indicator" style="left: 66.66%;"></div>
+        
+        <!-- Ground -->
+        <div id="ground"></div>
+
+        <!-- Player -->
+        <svg id="player" viewBox="0 0 50 50">
+            <!-- Architectural house form -->
+            <polygon points="25,5 45,25 45,45 5,45 5,25" fill="none" stroke="#c9a959" stroke-width="2"/>
+            <rect x="12" y="28" width="10" height="12" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+            <rect x="28" y="28" width="10" height="10" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+            <line x1="25" y1="5" x2="25" y2="25" stroke="#c9a959" stroke-width="1" opacity="0.5"/>
+        </svg>
+    </div>
+
+    <!-- Progress meter -->
+    <div id="progressMeter">
+        <div id="progressFill"></div>
+    </div>
+    <div id="levelIndicator">LEVEL 1</div>
+
+    <!-- Tutorial -->
+    <div id="tutorial">
+        <svg class="tutorial-hand" viewBox="0 0 40 40">
+            <circle cx="20" cy="20" r="8" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+            <path d="M20 12 L20 8 M20 32 L20 28" stroke="#c9a959" stroke-width="1.5"/>
+        </svg>
+    </div>
+
+    <!-- Start screen -->
+    <div id="startScreen">
+        <h1 class="title">Form Runner</h1>
+        <p class="subtitle">An Architectural Odyssey</p>
+        
+        <div class="start-instructions">
+            <div class="instruction-item">
+                <div class="instruction-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <path d="M4 10 L16 10 M12 6 L16 10 L12 14" stroke="#c9a959" fill="none" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <span>Drag or swipe to move</span>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <polygon points="10,4 16,10 16,16 4,16 4,10" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <span>Collect golden forms</span>
+            </div>
+            <div class="instruction-item">
+                <div class="instruction-icon">
+                    <svg width="20" height="20" viewBox="0 0 20 20">
+                        <rect x="4" y="4" width="12" height="12" fill="none" stroke="#8b3a3a" stroke-width="1.5" transform="rotate(45 10 10)"/>
+                    </svg>
+                </div>
+                <span>Avoid red obstacles</span>
+            </div>
+        </div>
+
+        <p class="tap-to-start">Tap to Begin</p>
+    </div>
+
+    <!-- Game over screen -->
+    <div id="gameOverScreen">
+        <h2 class="game-over-title">Construct Complete</h2>
+        <div class="final-score" id="finalScore">0</div>
+        <div class="score-breakdown">
+            <span id="formsCollected">0</span> forms collected<br>
+            Best streak: <span id="bestStreak">0</span>
+        </div>
+        <div class="best-score-badge" id="newBestBadge">NEW BEST</div>
+        <p class="tap-to-restart">Tap to Rebuild</p>
+    </div>
+</div>
+
+<script>
+    // Game state
+    const state = {
+        isPlaying: false,
+        isPaused: false,
+        isMuted: false,
+        score: 0,
+        streak: 0,
+        bestStreak: 0,
+        multiplier: 1,
+        level: 1,
+        speed: 4,
+        formsCollected: 0,
+        highScore: parseInt(localStorage.getItem('formRunnerHighScore') || '0'),
+        playerX: 50, // percentage
+        targetX: 50,
+        gameObjects: [],
+        lastSpawnTime: 0,
+        spawnInterval: 1200,
+        tutorialShown: false,
+        levelProgress: 0
+    };
+
+    // DOM elements
+    const gameContainer = document.getElementById('gameContainer');
+    const gameArea = document.getElementById('gameArea');
+    const player = document.getElementById('player');
+    const startScreen = document.getElementById('startScreen');
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const scoreValue = document.getElementById('scoreValue');
+    const streakValue = document.getElementById('streakValue');
+    const streakFill = document.getElementById('streakFill');
+    const multiplierEl = document.getElementById('multiplier');
+    const finalScore = document.getElementById('finalScore');
+    const formsCollected = document.getElementById('formsCollected');
+    const bestStreak = document.getElementById('bestStreak');
+    const newBestBadge = document.getElementById('newBestBadge');
+    const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const progressFill = document.getElementById('progressFill');
+    const levelIndicator = document.getElementById('levelIndicator');
+    const tutorial = document.getElementById('tutorial');
+    const muteBtn = document.getElementById('muteBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+
+    // Audio context (create on user interaction)
+    let audioCtx = null;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playSound(type) {
+        if (state.isMuted || !audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'collect') {
+            osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.15);
+        } else if (type === 'hit') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.2);
+        } else if (type === 'levelup') {
+            osc.frequency.setValueAtTime(523, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(659, audioCtx.currentTime + 0.1);
+            osc.frequency.setValueAtTime(784, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.35);
+        }
+    }
+
+    // Obstacle/collectible shapes
+    const shapes = {
+        obstacle: [
+            // Diamond
+            `<polygon points="20,5 35,20 20,35 5,20" fill="none" stroke="#8b3a3a" stroke-width="2"/>`,
+            // X shape
+            `<line x1="8" y1="8" x2="32" y2="32" stroke="#8b3a3a" stroke-width="3"/>
+             <line x1="32" y1="8" x2="8" y2="32" stroke="#8b3a3a" stroke-width="3"/>`,
+            // Triangle
+            `<polygon points="20,5 35,35 5,35" fill="none" stroke="#8b3a3a" stroke-width="2"/>`,
+            // Brutalist block
+            `<rect x="5" y="10" width="30" height="20" fill="none" stroke="#8b3a3a" stroke-width="2"/>
+             <line x1="5" y1="20" x2="35" y2="20" stroke="#8b3a3a" stroke-width="1.5"/>`
+        ],
+        collectible: [
+            // House form
+            `<polygon points="20,5 35,18 35,35 5,35 5,18" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+             <rect x="14" y="22" width="12" height="13" fill="none" stroke="#c9a959" stroke-width="1"/>`,
+            // Golden ratio spiral
+            `<path d="M25,20 Q30,15 30,10 Q30,5 25,5 Q15,5 15,15 Q15,30 30,30" fill="none" stroke="#c9a959" stroke-width="1.5"/>`,
+            // Architectural column
+            `<rect x="12" y="8" width="16" height="24" fill="none" stroke="#c9a959" stroke-width="1.5"/>
+             <line x1="12" y1="12" x2="28" y2="12" stroke="#c9a959" stroke-width="1"/>
+             <line x1="12" y1="28" x2="28" y2="28" stroke="#c9a959" stroke-width="1"/>`,
+            // Pentagon
+            `<polygon points="20,5 35,14 30,32 10,32 5,14" fill="none" stroke="#c9a959" stroke-width="1.5"/>`
+        ]
+    };
+
+    function createGameObject(type) {
+        const obj = document.createElement('div');
+        obj.className = `game-object ${type}`;
+        
+        const shapeArray = shapes[type];
+        const shapeIndex = Math.floor(Math.random() * shapeArray.length);
+        
+        obj.innerHTML = `<svg viewBox="0 0 40 40" width="40" height="40">${shapeArray[shapeIndex]}</svg>`;
+        
+        // Position in one of three lanes
+        const lanes = [16.66, 50, 83.33];
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
+        
+        obj.style.left = `calc(${lane}% - 20px)`;
+        obj.style.top = '-50px';
+        
+        obj.dataset.type = type;
+        obj.dataset.lane = lane;
+        
+        gameArea.appendChild(obj);
+        state.gameObjects.push(obj);
+        
+        return obj;
+    }
+
+    function spawnObjects() {
+        const now = Date.now();
+        if (now - state.lastSpawnTime < state.spawnInterval) return;
+        
+        state.lastSpawnTime = now;
+        
+        // 70% chance of obstacle, 30% collectible
+        const type = Math.random() < 0.7 ? 'obstacle' : 'collectible';
+        createGameObject(type);
+        
+        // Sometimes spawn a second object
+        if (Math.random() < 0.3 + (state.level * 0.05)) {
+            setTimeout(() => {
+                const type2 = Math.random() < 0.5 ? 'obstacle' : 'collectible';
+                createGameObject(type2);
+            }, 200);
+        }
+    }
+
+    function updateGameObjects() {
+        const playerRect = player.getBoundingClientRect();
+        const containerRect = gameContainer.getBoundingClientRect();
+        const groundY = containerRect.height * 0.8;
+
+        state.gameObjects = state.gameObjects.filter(obj => {
+            const currentTop = parseFloat(obj.style.top) || -50;
+            const newTop = currentTop + state.speed;
+            obj.style.top = newTop + 'px';
+
+            // Check if off screen
+            if (newTop > containerRect.height) {
+                obj.remove();
+                // Missed collectible breaks streak
+                if (obj.dataset.type === 'collectible') {
+                    breakStreak();
+                }
+                return false;
+            }
+
+            // Collision detection
+            const objRect = obj.getBoundingClientRect();
+            const objCenterX = objRect.left + objRect.width / 2;
+            const objCenterY = objRect.top + objRect.height / 2;
+            const playerCenterX = playerRect.left + playerRect.width / 2;
+            const playerCenterY = playerRect.top + playerRect.height / 2;
+
+            const dx = objCenterX - playerCenterX;
+            const dy = objCenterY - playerCenterY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const collisionThreshold = 35;
+
+            if (distance < collisionThreshold && !obj.classList.contains('collected')) {
+                if (obj.dataset.type === 'collectible') {
+                    collectItem(obj);
+                    return false;
+                } else {
+                    hitObstacle();
+                    return true;
+                }
+            }
+
+            return true;
+        });
+    }
+
+    function collectItem(obj) {
+        obj.classList.add('collected');
+        playSound('collect');
+        
+        state.streak++;
+        state.formsCollected++;
+        
+        // Update multiplier based on streak
+        if (state.streak >= 10) {
+            state.multiplier = 4;
+        } else if (state.streak >= 5) {
+            state.multiplier = 3;
+        } else if (state.streak >= 3) {
+            state.multiplier = 2;
+        }
+        
+        const points = 100 * state.multiplier;
+        state.score += points;
+        
+        if (state.streak > state.bestStreak) {
+            state.bestStreak = state.streak;
+        }
+        
+        // Spawn particles
+        spawnParticles(obj.getBoundingClientRect());
+        
+        // Show combo popup
+        if (state.streak >= 3) {
+            showComboPopup(obj.getBoundingClientRect(), state.streak);
+        }
+        
+        updateUI();
+        
+        setTimeout(() => obj.remove(), 250);
+    }
+
+    function hitObstacle() {
+        playSound('hit');
+        player.classList.add('hit');
+        gameArea.classList.add('shake');
+        
+        setTimeout(() => {
+            player.classList.remove('hit');
+            gameArea.classList.remove('shake');
+        }, 150);
+        
+        gameOver();
+    }
+
+    function breakStreak() {
+        if (state.streak > 0) {
+            state.streak = 0;
+            state.multiplier = 1;
+            updateUI();
+        }
+    }
+
+    function spawnParticles(rect) {
+        for (let i = 0; i < 8; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = (rect.left + rect.width / 2) + 'px';
+            particle.style.top = (rect.top + rect.height / 2) + 'px';
+            
+            const angle = (Math.PI * 2 / 8) * i;
+            const velocity = 50 + Math.random() * 30;
+            const dx = Math.cos(angle) * velocity;
+            const dy = Math.sin(angle) * velocity;
+            
+            particle.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                { transform: `translate(${dx}px, ${dy}px) scale(0)`, opacity: 0 }
+            ], {
+                duration: 400,
+                easing: 'ease-out'
+            });
+            
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), 400);
+        }
+    }
+
+    function showComboPopup(rect, combo) {
+        const popup = document.createElement('div');
+        popup.className = 'combo-popup';
+        popup.textContent = `×${combo} COMBO`;
+        popup.style.left = (rect.left + rect.width / 2 - 40) + 'px';
+        popup.style.top = rect.top + 'px';
+        
+        gameArea.appendChild(popup);
+        setTimeout(() => popup.remove(), 600);
+    }
+
+    function updateUI() {
+        scoreValue.textContent = state.score.toLocaleString();
+        streakValue.textContent = state.streak;
+        
+        // Streak fill (max at 10)
+        const fillPercent = Math.min(state.streak / 10 * 100, 100);
+        streakFill.style.width = fillPercent + '%';
+        
+        // Multiplier display
+        if (state.multiplier > 1) {
+            multiplierEl.textContent = `×${state.multiplier}`;
+            multiplierEl.classList.add('active');
+        } else {
+            multiplierEl.classList.remove('active');
+        }
+        
+        // Level progress
+        state.levelProgress = (state.score % 1000) / 1000 * 100;
+        progressFill.style.width = state.levelProgress + '%';
+        
+        // Check for level up
+        const newLevel = Math.floor(state.score / 1000) + 1;
+        if (newLevel > state.level) {
+            levelUp(newLevel);
+        }
+        
+        // High score
+        highScoreDisplay.textContent = `BEST: ${state.highScore.toLocaleString()}`;
+    }
+
+    function levelUp(newLevel) {
+        state.level = newLevel;
+        state.speed = 4 + (newLevel - 1) * 0.8;
+        state.spawnInterval = Math.max(600, 1200 - (newLevel - 1) * 100);
+        
+        levelIndicator.textContent = `LEVEL ${state.level}`;
+        playSound('levelup');
+        
+        // Visual feedback
+        levelIndicator.style.color = '#c9a959';
+        setTimeout(() => {
+            levelIndicator.style.color = '';
+        }, 500);
+    }
+
+    function updatePlayer() {
+        // Smooth interpolation to target position
+        const diff = state.targetX - state.playerX;
+        state.playerX += diff * 0.2;
+        
+        // Clamp to bounds
+        state.playerX = Math.max(10, Math.min(90, state.playerX));
+        
+        player.style.left = `calc(${state.playerX}% - 25px)`;
+        player.style.bottom = '22%';
+    }
+
+    // Touch/mouse handling
+    let isDragging = false;
+    let touchStartX = 0;
+
+    function handleStart(clientX) {
+        isDragging = true;
+        touchStartX = clientX;
+        initAudio();
+    }
+
+    function handleMove(clientX) {
+        if (!isDragging || !state.isPlaying || state.isPaused) return;
+        
+        const containerRect = gameContainer.getBoundingClientRect();
+        const relativeX = (clientX - containerRect.left) / containerRect.width * 100;
+        state.targetX = relativeX;
+        
+        // Hide tutorial after first move
+        if (!state.tutorialShown) {
+            state.tutorialShown = true;
+            tutorial.classList.remove('visible');
+        }
+    }
+
+    function handleEnd() {
+        isDragging = false;
+    }
+
+    // Swipe support
+    gameContainer.addEventListener('touchstart', (e) => {
+        if (!state.isPlaying) return;
+        handleStart(e.touches[0].clientX);
+    }, { passive: true });
+
+    gameContainer.addEventListener('touchmove', (e) => {
+        handleMove(e.touches[0].clientX);
+    }, { passive: true });
+
+    gameContainer.addEventListener('touchend', handleEnd);
+
+    gameContainer.addEventListener('mousedown', (e) => {
+        if (!state.isPlaying) return;
+        handleStart(e.clientX);
+    });
+
+    gameContainer.addEventListener('mousemove', (e) => {
+        handleMove(e.clientX);
+    });
+
+    gameContainer.addEventListener('mouseup', handleEnd);
+    gameContainer.addEventListener('mouseleave', handleEnd);
+
+    // Start game
+    function startGame() {
+        initAudio();
+        
+        state.isPlaying = true;
+        state.isPaused = false;
+        state.score = 0;
+        state.streak = 0;
+        state.bestStreak = 0;
+        state.multiplier = 1;
+        state.level = 1;
+        state.speed = 4;
+        state.spawnInterval = 1200;
+        state.formsCollected = 0;
+        state.playerX = 50;
+        state.targetX = 50;
+        state.levelProgress = 0;
+        state.tutorialShown = false;
+        
+        // Clear old objects
+        state.gameObjects.forEach(obj => obj.remove());
+        state.gameObjects = [];
+        
+        updateUI();
+        levelIndicator.textContent = 'LEVEL 1';
+        
+        startScreen.classList.add('hidden');
+        gameOverScreen.classList.remove('visible');
+        
+        // Show tutorial
+        setTimeout(() => {
+            if (!state.tutorialShown) {
+                tutorial.classList.add('visible');
+            }
+        }, 500);
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    function gameOver() {
+        state.isPlaying = false;
+        
+        // Update high score
+        if (state.score > state.highScore) {
+            state.highScore = state.score;
+            localStorage.setItem('formRunnerHighScore', state.highScore.toString());
+            newBestBadge.classList.add('visible');
+        } else {
+            newBestBadge.classList.remove('visible');
+        }
+        
+        // Show game over screen
+        finalScore.textContent = state.score.toLocaleString();
+        formsCollected.textContent = state.formsCollected;
+        bestStreak.textContent = state.bestStreak;
+        
+        setTimeout(() => {
+            gameOverScreen.classList.add('visible');
+        }, 300);
+    }
+
+    function gameLoop() {
+        if (!state.isPlaying || state.isPaused) return;
+        
+        updatePlayer();
+        spawnObjects();
+        updateGameObjects();
+        
+        requestAnimationFrame(gameLoop);
+    }
+
+    // Button handlers
+    muteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        state.isMuted = !state.isMuted;
+        muteBtn.classList.toggle('muted', state.isMuted);
+        muteBtn.textContent = state.isMuted ? '♪̸' : '♪';
+    });
+
+    pauseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!state.isPlaying) return;
+        
+        state.isPaused = !state.isPaused;
+        pauseBtn.textContent = state.isPaused ? '▶' : '❚❚';
+        
+        if (!state.isPaused) {
+            requestAnimationFrame(gameLoop);
+        }
+    });
+
+    // Screen tap handlers
+    startScreen.addEventListener('click', startGame);
+    startScreen.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    gameOverScreen.addEventListener('click', startGame);
+    gameOverScreen.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    // Initialize high score display
+    highScoreDisplay.textContent = `BEST: ${state.highScore.toLocaleString()}`;
+
+    // Prevent default touch behaviors
+    document.addEventListener('touchmove', (e) => {
+        if (state.isPlaying) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Handle visibility change (pause when tab hidden)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && state.isPlaying && !state.isPaused) {
+            state.isPaused = true;
+            pauseBtn.textContent = '▶';
+        }
+    });
+
+    // Speed lines animation
+    function createSpeedLine() {
+        if (!state.isPlaying || state.isPaused) return;
+        
+        const line = document.createElement('div');
+        line.className = 'speed-line';
+        line.style.left = (Math.random() * 100) + '%';
+        line.style.top = '-30px';
+        
+        gameArea.appendChild(line);
+        
+        const duration = 1000 / state.speed * 50;
+        line.animate([
+            { top: '-30px', opacity: 0.3 },
+            { top: '100%', opacity: 0 }
+        ], {
+            duration: duration,
+            easing: 'linear'
+        });
+        
+        setTimeout(() => line.remove(), duration);
+    }
+
+    setInterval(createSpeedLine, 200);
+</script>
+```
+
+</body>
+</html>
