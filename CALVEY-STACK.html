@@ -390,6 +390,20 @@
         color: var(--text-dim);
         text-transform: uppercase;
         margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .leaderboard-status {
+        font-size: 8px;
+        color: var(--text-dim);
+        opacity: 0.7;
+    }
+
+    .leaderboard-status.loading {
+        color: var(--perfect);
     }
 
     .leaderboard {
@@ -456,7 +470,14 @@
         margin-left: 10px;
     }
 
-    /* Username Input */
+    .leaderboard-loading {
+        padding: 20px;
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 11px;
+    }
+
+    /* Username Section */
     .username-section {
         width: 100%;
         margin-bottom: 16px;
@@ -611,7 +632,6 @@
         border-color: rgba(90, 90, 110, 0.5);
     }
 
-    /* Hide on game screen */
     .hidden {
         display: none !important;
     }
@@ -686,9 +706,12 @@
 
             <!-- Leaderboard -->
             <div class="leaderboard-section">
-                <div class="leaderboard-header">🏆 Leaderboard</div>
+                <div class="leaderboard-header">
+                    🏆 Global Leaderboard
+                    <span class="leaderboard-status" id="leaderboardStatus"></span>
+                </div>
                 <div class="leaderboard" id="leaderboard">
-                    <!-- Entries will be populated by JS -->
+                    <div class="leaderboard-loading">Loading scores...</div>
                 </div>
             </div>
             
@@ -720,7 +743,7 @@
         CAMERA_LERP: 0.12,
         STACK_VISIBLE: 10,
         BORDER_RADIUS: 10,
-        MAX_LEADERBOARD_ENTRIES: 5
+        MAX_LEADERBOARD_ENTRIES: 10
     };
 
     // Quotes
@@ -814,8 +837,101 @@
         soundEnabled: true,
         gamesPlayed: parseInt(localStorage.getItem('calveyStackGamesPlayed') || '0'),
         username: localStorage.getItem('calveyStackUsername') || '',
-        leaderboard: JSON.parse(localStorage.getItem('calveyStackLeaderboard') || '[]')
+        visitorId: localStorage.getItem('calveyStackVisitorId') || generateVisitorId(),
+        leaderboard: []
     };
+
+    // Generate unique visitor ID
+    function generateVisitorId() {
+        const id = 'visitor_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        localStorage.setItem('calveyStackVisitorId', id);
+        return id;
+    }
+
+    // ============================================================
+    // SHARED STORAGE API (Global Leaderboard)
+    // ============================================================
+    
+    async function loadGlobalLeaderboard() {
+        const statusEl = document.getElementById('leaderboardStatus');
+        statusEl.textContent = '(loading...)';
+        statusEl.className = 'leaderboard-status loading';
+        
+        try {
+            // Try to load from shared storage
+            if (window.storage) {
+                const result = await window.storage.get('calvey-stack-leaderboard', true);
+                if (result && result.value) {
+                    state.leaderboard = JSON.parse(result.value);
+                    statusEl.textContent = '(live)';
+                    statusEl.className = 'leaderboard-status';
+                    renderLeaderboard();
+                    return;
+                }
+            }
+        } catch (e) {
+            console.log('Shared storage not available, using local fallback');
+        }
+        
+        // Fallback to localStorage
+        state.leaderboard = JSON.parse(localStorage.getItem('calveyStackLeaderboard') || '[]');
+        statusEl.textContent = '(local)';
+        statusEl.className = 'leaderboard-status';
+        renderLeaderboard();
+    }
+
+    async function saveGlobalLeaderboard() {
+        try {
+            // Save to shared storage (visible to all users)
+            if (window.storage) {
+                await window.storage.set('calvey-stack-leaderboard', JSON.stringify(state.leaderboard), true);
+            }
+        } catch (e) {
+            console.log('Could not save to shared storage');
+        }
+        
+        // Always save local backup
+        localStorage.setItem('calveyStackLeaderboard', JSON.stringify(state.leaderboard));
+    }
+
+    async function updateLeaderboard(score) {
+        if (!state.username || score === 0) return;
+        
+        // Reload latest leaderboard first
+        await loadGlobalLeaderboard();
+        
+        // Check if user already exists (by visitorId to prevent duplicates)
+        const existingIndex = state.leaderboard.findIndex(entry => entry.odtId === state.visitorId);
+        
+        if (existingIndex !== -1) {
+            // Update if new score is higher
+            if (score > state.leaderboard[existingIndex].score) {
+                state.leaderboard[existingIndex].score = score;
+                state.leaderboard[existingIndex].name = state.username;
+                state.leaderboard[existingIndex].timestamp = Date.now();
+            }
+        } else {
+            // Add new entry
+            state.leaderboard.push({
+                id: state.visitorId,
+                name: state.username,
+                score: score,
+                timestamp: Date.now()
+            });
+        }
+        
+        // Sort by score descending
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        
+        // Keep only top entries
+        state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+        
+        // Save to shared storage
+        await saveGlobalLeaderboard();
+        
+        // Re-render
+        renderLeaderboard();
+    }
 
     // ============================================================
     // CANVAS SETUP
@@ -901,7 +1017,7 @@
     }
 
     // ============================================================
-    // LEADERBOARD
+    // LEADERBOARD UI
     // ============================================================
     
     function saveUsername(name) {
@@ -925,35 +1041,6 @@
         }
     }
 
-    function updateLeaderboard(score) {
-        if (!state.username || score === 0) return;
-        
-        // Check if user already exists
-        const existingIndex = state.leaderboard.findIndex(entry => entry.name === state.username);
-        
-        if (existingIndex !== -1) {
-            // Update if new score is higher
-            if (score > state.leaderboard[existingIndex].score) {
-                state.leaderboard[existingIndex].score = score;
-            }
-        } else {
-            // Add new entry
-            state.leaderboard.push({
-                name: state.username,
-                score: score
-            });
-        }
-        
-        // Sort by score descending
-        state.leaderboard.sort((a, b) => b.score - a.score);
-        
-        // Keep only top entries
-        state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
-        
-        // Save to localStorage
-        localStorage.setItem('calveyStackLeaderboard', JSON.stringify(state.leaderboard));
-    }
-
     function renderLeaderboard() {
         const container = document.getElementById('leaderboard');
         container.innerHTML = '';
@@ -970,7 +1057,7 @@
         }
         
         state.leaderboard.forEach((entry, index) => {
-            const isCurrentPlayer = entry.name === state.username;
+            const isCurrentPlayer = entry.id === state.visitorId;
             const isTop3 = index < 3;
             
             const entryEl = document.createElement('div');
@@ -978,12 +1065,18 @@
             
             entryEl.innerHTML = `
                 <span class="entry-rank">${index + 1}</span>
-                <span class="entry-name">${entry.name}</span>
+                <span class="entry-name">${escapeHtml(entry.name)}</span>
                 <span class="entry-score">${entry.score}</span>
             `;
             
             container.appendChild(entryEl);
         });
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     // ============================================================
@@ -1461,7 +1554,7 @@
         document.getElementById('tapHint').style.display = 'block';
     }
 
-    function gameOver() {
+    async function gameOver() {
         state.playing = false;
         state.current = null;
         
@@ -1476,17 +1569,14 @@
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
         
-        // Update leaderboard
-        updateLeaderboard(state.score);
+        // Update global leaderboard
+        await updateLeaderboard(state.score);
         
         // Draw tower graphic
         drawTowerGraphic(state.score, state.highScore);
         
         // Update username display
         updateUsernameDisplay();
-        
-        // Render leaderboard
-        renderLeaderboard();
         
         const quote = getRandomQuote();
         document.getElementById('quoteText').textContent = `"${quote.text}"`;
@@ -1525,7 +1615,6 @@
         startGame();
     });
 
-    // Game over screen tap to restart (excluding interactive elements)
     document.getElementById('gameOverScreen').addEventListener('click', (e) => {
         if (e.target.closest('.username-section')) return;
         if (e.target.closest('.leaderboard')) return;
@@ -1539,24 +1628,22 @@
     });
 
     // Username handlers
-    document.getElementById('saveUsernameBtn').addEventListener('click', (e) => {
+    document.getElementById('saveUsernameBtn').addEventListener('click', async (e) => {
         e.stopPropagation();
         const input = document.getElementById('usernameInput');
         if (input.value.trim()) {
             saveUsername(input.value);
-            updateLeaderboard(state.score);
-            renderLeaderboard();
+            await updateLeaderboard(state.score);
         }
     });
 
-    document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+    document.getElementById('usernameInput').addEventListener('keypress', async (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             const input = document.getElementById('usernameInput');
             if (input.value.trim()) {
                 saveUsername(input.value);
-                updateLeaderboard(state.score);
-                renderLeaderboard();
+                await updateLeaderboard(state.score);
             }
         }
     });
@@ -1592,6 +1679,7 @@
     
     document.getElementById('highScoreValue').textContent = state.highScore;
     updateUsernameDisplay();
+    loadGlobalLeaderboard();
     gameLoop();
 </script>
 ```
