@@ -858,79 +858,265 @@
     }
 
     // ============================================================
-    // SHARED STORAGE API (Global Leaderboard - Visible to ALL devices)
-    // ============================================================
-    
-    const LEADERBOARD_KEY = 'calvey-stack-global-leaderboard-v1';
-    
-    async function loadGlobalLeaderboard() {
-        const statusEl = document.getElementById('leaderboardStatus');
-        statusEl.textContent = '(loading...)';
-        statusEl.className = 'leaderboard-status loading';
-        
+    // SHARED STORAGE API (Global Leaderboard - Visible to ALL <!-- Replace the existing SHARED STORAGE API block with this (inside your main <script> block) -->
+<script>
+/*
+  GLOBAL LEADERBOARD (Firebase-backed, with fallback)
+  - To enable cross-device/global leaderboard: create a Firebase project,
+    create a Realtime Database, and set window.FIREBASE_CONFIG below to your project's config.
+  - For development/testing you can temporarily use permissive DB rules:
+      { "rules": { ".read": true, ".write": true } }
+  - When ready, harden rules or require authenticated writes.
+*/
+
+const LEADERBOARD_PATH = '/calvey_stack/leaderboard';
+let firebaseEnabled = false;
+
+// Place your Firebase config here OR set window.FIREBASE_CONFIG before this script runs.
+// Example:
+// window.FIREBASE_CONFIG = {
+//   apiKey: "...",
+//   authDomain: "...",
+//   databaseURL: "https://<PROJECT>.firebaseio.com",
+//   projectId: "...",
+//   storageBucket: "...",
+//   messagingSenderId: "...",
+//   appId: "..."
+// };
+
+function initFirebaseIfAvailable() {
+    if (window.firebase && window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.databaseURL) {
         try {
-            // Use shared storage (shared: true) - visible to ALL users on ALL devices
-            if (window.storage) {
-                const result = await window.storage.get(LEADERBOARD_KEY, true);
-                if (result && result.value) {
-                    state.leaderboard = JSON.parse(result.value);
-                    statusEl.textContent = '(live)';
-                    statusEl.className = 'leaderboard-status live';
-                    renderLeaderboard();
-                    return;
-                }
+            // Only init if not already initialized
+            if (!firebase.apps || !firebase.apps.length) {
+                firebase.initializeApp(window.FIREBASE_CONFIG);
             }
+            firebaseEnabled = !!firebase.database;
+            console.log('Firebase initialised for leaderboard:', firebaseEnabled);
         } catch (e) {
-            console.log('Loading from shared storage failed:', e);
+            console.warn('Firebase init failed:', e);
+            firebaseEnabled = false;
         }
-        
-        // If no shared data exists yet, start with empty leaderboard
+    } else {
+        firebaseEnabled = false;
+    }
+}
+
+// Call immediately so functions can use it
+initFirebaseIfAvailable();
+
+async function loadGlobalLeaderboard() {
+    const statusEl = document.getElementById('leaderboardStatus');
+    statusEl.textContent = '(loading...)';
+    statusEl.className = 'leaderboard-status loading';
+
+    // Firebase path first (global)
+    if (firebaseEnabled) {
+        try {
+            const snapshot = await firebase.database().ref(LEADERBOARD_PATH).once('value');
+            const val = snapshot.val();
+
+            // Data may be an object or an array; normalize to array
+            if (!val) {
+                state.leaderboard = [];
+            } else if (Array.isArray(val)) {
+                state.leaderboard = val.filter(Boolean);
+            } else if (typeof val === 'object') {
+                // if stored as keyed object, convert to array
+                state.leaderboard = Object.values(val);
+            } else {
+                state.leaderboard = [];
+            }
+
+            statusEl.textContent = '(live)';
+            statusEl.className = 'leaderboard-status live';
+            renderLeaderboard();
+
+            // Attach real-time listener so clients see updates from other devices
+            firebase.database().ref(LEADERBOARD_PATH).on('value', snap => {
+                const v = snap.val();
+                if (!v) {
+                    state.leaderboard = [];
+                } else if (Array.isArray(v)) {
+                    state.leaderboard = v.filter(Boolean);
+                } else if (typeof v === 'object') {
+                    state.leaderboard = Object.values(v);
+                } else {
+                    state.leaderboard = [];
+                }
+                renderLeaderboard();
+            });
+
+            return;
+        } catch (e) {
+            console.warn('Failed to load leaderboard from Firebase:', e);
+            // fall through to other methods
+        }
+    }
+
+    // Fallback: use window.storage (if available) or localStorage (per-device only)
+    try {
+        if (window.storage) {
+            const result = await window.storage.get('calvey-stack-global-leaderboard-v1', true);
+            if (result && result.value) {
+                state.leaderboard = JSON.parse(result.value);
+            } else {
+                state.leaderboard = [];
+            }
+            statusEl.textContent = '(live)';
+            statusEl.className = 'leaderboard-status live';
+            renderLeaderboard();
+            return;
+        }
+    } catch (e) {
+        console.log('Loading from shared storage failed:', e);
+    }
+
+    // final fallback = localStorage (not global across devices)
+    try {
+        const raw = localStorage.getItem('calvey-stack-global-leaderboard-v1');
+        state.leaderboard = raw ? JSON.parse(raw) : [];
+    } catch (e) {
         state.leaderboard = [];
-        statusEl.textContent = '(live)';
-        statusEl.className = 'leaderboard-status live';
-        renderLeaderboard();
     }
+    statusEl.textContent = '(local)';
+    statusEl.className = 'leaderboard-status';
+    renderLeaderboard();
+}
 
-    async function saveGlobalLeaderboard() {
+async function saveGlobalLeaderboard() {
+    // Save to Firebase if available
+    if (firebaseEnabled) {
         try {
-            // Save to shared storage with shared: true
-            // This makes it visible to ALL users across ALL devices
-            if (window.storage) {
-                await window.storage.set(LEADERBOARD_KEY, JSON.stringify(state.leaderboard), true);
-                console.log('Leaderboard saved to shared storage');
-            }
+            await firebase.database().ref(LEADERBOARD_PATH).set(state.leaderboard);
+            console.log('Leaderboard saved to Firebase');
+            return;
         } catch (e) {
-            console.log('Could not save to shared storage:', e);
+            console.warn('Could not save leaderboard to Firebase:', e);
         }
     }
 
-    async function updateLeaderboard(score) {
-        if (!state.username || score === 0) return;
-        
-        // Reload latest leaderboard first to get most recent data
+    // Else try window.storage (existing code)
+    try {
+        if (window.storage) {
+            await window.storage.set('calvey-stack-global-leaderboard-v1', JSON.stringify(state.leaderboard), true);
+            console.log('Leaderboard saved to window.storage');
+            return;
+        }
+    } catch (e) {
+        console.log('Could not save to shared storage:', e);
+    }
+
+    // Fallback to localStorage (per-device)
+    try {
+        localStorage.setItem('calvey-stack-global-leaderboard-v1', JSON.stringify(state.leaderboard));
+        console.log('Leaderboard saved to localStorage (device only)');
+    } catch (e) {
+        console.warn('Could not save leaderboard to localStorage:', e);
+    }
+}
+
+async function updateLeaderboard(score) {
+    if (!state.username || score === 0) return;
+
+    // If firebase is enabled, do a read-modify-write using a transaction-like approach
+    if (firebaseEnabled) {
         try {
-            if (window.storage) {
-                const result = await window.storage.get(LEADERBOARD_KEY, true);
-                if (result && result.value) {
-                    state.leaderboard = JSON.parse(result.value);
+            // Read current leaderboard
+            const ref = firebase.database().ref(LEADERBOARD_PATH);
+            const snap = await ref.once('value');
+            let list = snap.val();
+            if (!list) list = [];
+            if (!Array.isArray(list)) {
+                // convert keyed object to array
+                list = Object.values(list);
+            }
+
+            // Try to find existing entry by visitor id
+            const existingIndex = list.findIndex(entry => entry && entry.id === state.visitorId);
+
+            if (existingIndex !== -1) {
+                if (score > list[existingIndex].score) {
+                    list[existingIndex].score = score;
+                    list[existingIndex].name = state.username;
+                    list[existingIndex].timestamp = Date.now();
                 }
+            } else {
+                list.push({
+                    id: state.visitorId,
+                    name: state.username,
+                    score: score,
+                    timestamp: Date.now()
+                });
             }
+
+            // Sort and trim
+            list.sort((a, b) => b.score - a.score);
+            list = list.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+
+            // Write back
+            await ref.set(list);
+            state.leaderboard = list;
+            renderLeaderboard();
+            return;
         } catch (e) {
-            console.log('Could not refresh leaderboard');
+            console.warn('Failed to update leaderboard in Firebase:', e);
+            // fall through to other methods
         }
-        
-        // Check if this player already exists (by visitorId)
+    }
+
+    // Fallback: window.storage
+    try {
+        if (window.storage) {
+            try {
+                const result = await window.storage.get('calvey-stack-global-leaderboard-v1', true);
+                state.leaderboard = result && result.value ? JSON.parse(result.value) : [];
+            } catch (e) {
+                state.leaderboard = [];
+            }
+
+            const existingIndex = state.leaderboard.findIndex(entry => entry.id === state.visitorId);
+
+            if (existingIndex !== -1) {
+                if (score > state.leaderboard[existingIndex].score) {
+                    state.leaderboard[existingIndex].score = score;
+                    state.leaderboard[existingIndex].name = state.username;
+                    state.leaderboard[existingIndex].timestamp = Date.now();
+                }
+            } else {
+                state.leaderboard.push({
+                    id: state.visitorId,
+                    name: state.username,
+                    score: score,
+                    timestamp: Date.now()
+                });
+            }
+
+            state.leaderboard.sort((a, b) => b.score - a.score);
+            state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+
+            await saveGlobalLeaderboard();
+            renderLeaderboard();
+            return;
+        }
+    } catch (e) {
+        console.log('Could not refresh leaderboard via window.storage', e);
+    }
+
+    // Final fallback: localStorage only (per-device)
+    try {
+        const raw = localStorage.getItem('calvey-stack-global-leaderboard-v1');
+        state.leaderboard = raw ? JSON.parse(raw) : [];
+
         const existingIndex = state.leaderboard.findIndex(entry => entry.id === state.visitorId);
-        
+
         if (existingIndex !== -1) {
-            // Update only if new score is higher
             if (score > state.leaderboard[existingIndex].score) {
                 state.leaderboard[existingIndex].score = score;
                 state.leaderboard[existingIndex].name = state.username;
                 state.leaderboard[existingIndex].timestamp = Date.now();
             }
         } else {
-            // Add new entry
             state.leaderboard.push({
                 id: state.visitorId,
                 name: state.username,
@@ -938,20 +1124,17 @@
                 timestamp: Date.now()
             });
         }
-        
-        // Sort by score descending
-        state.leaderboard.sort((a, b) => b.score - a.score);
-        
-        // Keep only top entries
-        state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
-        
-        // Save to shared storage (visible to all devices)
-        await saveGlobalLeaderboard();
-        
-        // Re-render
-        renderLeaderboard();
-    }
 
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+
+        localStorage.setItem('calvey-stack-global-leaderboard-v1', JSON.stringify(state.leaderboard));
+        renderLeaderboard();
+    } catch (e) {
+        console.warn('Could not update leaderboard in fallback storage:', e);
+    }
+}
+</script>
     // ============================================================
     // CANVAS SETUP
     // ============================================================
