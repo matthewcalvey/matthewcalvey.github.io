@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>STACK - CALVEY INC.</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
     <style>
@@ -23,18 +22,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
-            user-select: none;
         }
 
         html, body {
             width: 100%;
             height: 100%;
             overflow: hidden;
-            position: fixed;
             background: var(--bg);
             font-family: 'IBM Plex Mono', monospace;
+            -webkit-tap-highlight-color: transparent;
         }
 
         #gameContainer {
@@ -61,12 +57,13 @@
 
         #scoreDisplay {
             position: absolute;
-            top: env(safe-area-inset-top, 20px);
+            top: 20px;
             left: 0;
             right: 0;
             text-align: center;
             z-index: 100;
             padding-top: 24px;
+            pointer-events: none;
         }
 
         .score-label {
@@ -102,9 +99,7 @@
             font-size: 56px;
             letter-spacing: 0.05em;
             color: var(--perfect);
-            text-shadow: 
-                0 0 40px var(--perfect),
-                0 0 80px rgba(255, 217, 61, 0.5);
+            text-shadow: 0 0 40px var(--perfect), 0 0 80px rgba(255, 217, 61, 0.5);
             opacity: 0;
             z-index: 200;
             pointer-events: none;
@@ -136,18 +131,17 @@
             transition: opacity 0.2s;
         }
 
-        #comboDisplay.show {
-            opacity: 1;
-        }
+        #comboDisplay.show { opacity: 1; }
 
         #gameCanvas {
             width: 100%;
             height: 100%;
+            display: block;
         }
 
         #tapHint {
             position: absolute;
-            bottom: calc(env(safe-area-inset-bottom, 20px) + 50px);
+            bottom: 70px;
             left: 0;
             right: 0;
             text-align: center;
@@ -157,6 +151,7 @@
             color: var(--text-dim);
             text-transform: uppercase;
             animation: pulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes pulse {
@@ -176,14 +171,12 @@
             justify-content: center;
             z-index: 500;
             background: var(--bg);
+            cursor: pointer;
         }
 
-        #startScreen.hidden {
-            display: none;
-        }
+        #startScreen.hidden { display: none; }
 
         .brand-logo {
-            font-family: 'IBM Plex Mono', monospace;
             font-size: 11px;
             font-weight: 600;
             letter-spacing: 0.4em;
@@ -229,31 +222,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'IBM Plex Mono', monospace;
             font-size: 7px;
             font-weight: 600;
             letter-spacing: 0.15em;
             color: rgba(255,255,255,0.9);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
 
         .demo-block:nth-child(1) { 
-            width: 120px; 
-            bottom: 0; 
+            width: 120px; bottom: 0; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
         .demo-block:nth-child(2) { 
-            width: 110px; 
-            bottom: 26px; 
+            width: 110px; bottom: 26px; 
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(240, 147, 251, 0.4);
         }
         .demo-block:nth-child(3) { 
-            width: 100px; 
-            bottom: 52px; 
+            width: 100px; bottom: 52px; 
             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
             animation: demoSlide 1.8s ease-in-out infinite;
         }
 
@@ -282,7 +267,6 @@
             pointer-events: none;
             transition: opacity 0.4s;
             overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
         }
 
         #gameOverScreen.visible {
@@ -297,19 +281,13 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
-            padding: 40px 20px;
-            padding-top: calc(env(safe-area-inset-top, 20px) + 30px);
-            padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 30px);
+            padding: 50px 20px;
         }
 
         .tower-graphic {
             width: 160px;
             height: 120px;
             margin-bottom: 12px;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            flex-shrink: 0;
         }
 
         #towerCanvas {
@@ -332,21 +310,15 @@
             color: var(--text);
             line-height: 1;
             margin-bottom: 4px;
-            text-shadow: 0 4px 30px rgba(0,0,0,0.3);
         }
 
         .score-stats {
             font-size: 10px;
-            font-weight: 500;
             color: var(--text-dim);
-            line-height: 1.8;
             margin-bottom: 12px;
-            letter-spacing: 0.05em;
         }
 
-        .score-stats span {
-            color: var(--text);
-        }
+        .score-stats span { color: var(--text); }
 
         .new-record {
             font-size: 10px;
@@ -357,21 +329,10 @@
             padding: 8px 20px;
             border-radius: 6px;
             margin-bottom: 16px;
-            opacity: 0;
-            visibility: hidden;
-            text-shadow: 0 0 20px var(--perfect);
+            display: none;
         }
 
-        .new-record.visible {
-            opacity: 1;
-            visibility: visible;
-            animation: recordGlow 1.5s ease-in-out infinite;
-        }
-
-        @keyframes recordGlow {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255, 217, 61, 0.4); }
-            50% { box-shadow: 0 0 20px 5px rgba(255, 217, 61, 0.2); }
-        }
+        .new-record.visible { display: block; }
 
         .username-section {
             width: 100%;
@@ -401,19 +362,12 @@
             padding: 10px 14px;
             font-family: 'IBM Plex Mono', monospace;
             font-size: 13px;
-            font-weight: 500;
             color: var(--text);
             outline: none;
-            transition: border-color 0.2s;
         }
 
-        .username-input:focus {
-            border-color: var(--perfect);
-        }
-
-        .username-input::placeholder {
-            color: var(--text-dim);
-        }
+        .username-input:focus { border-color: var(--perfect); }
+        .username-input::placeholder { color: var(--text-dim); }
 
         .username-save-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -423,14 +377,8 @@
             font-family: 'IBM Plex Mono', monospace;
             font-size: 11px;
             font-weight: 600;
-            letter-spacing: 0.1em;
             color: white;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .username-save-btn:active {
-            transform: scale(0.95);
         }
 
         .username-display {
@@ -440,28 +388,16 @@
             gap: 10px;
         }
 
-        .current-username {
-            font-size: 12px;
-            font-weight: 500;
-            color: var(--text);
-        }
+        .current-username { font-size: 12px; color: var(--text); }
 
         .change-name-btn {
             font-size: 9px;
-            font-weight: 600;
-            letter-spacing: 0.1em;
             color: var(--text-dim);
             background: none;
             border: 1px solid var(--border);
             border-radius: 4px;
             padding: 5px 10px;
             cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .change-name-btn:active {
-            border-color: var(--text-dim);
-            color: var(--text);
         }
 
         .quote-section {
@@ -500,29 +436,14 @@
             color: var(--text-dim);
             text-transform: uppercase;
             margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
         }
 
         .leaderboard-status {
             font-size: 8px;
-            color: var(--text-dim);
-            opacity: 0.7;
+            margin-left: 8px;
         }
 
-        .leaderboard-status.live {
-            color: #43e97b;
-        }
-
-        .leaderboard-status.loading {
-            color: var(--perfect);
-        }
-
-        .leaderboard-status.error {
-            color: #ff6b6b;
-        }
+        .leaderboard-status.live { color: #43e97b; }
 
         .leaderboard {
             width: 100%;
@@ -537,29 +458,14 @@
             align-items: center;
             padding: 10px 14px;
             border-bottom: 1px solid var(--border);
-            transition: background 0.2s;
         }
 
-        .leaderboard-entry:last-child {
-            border-bottom: none;
-        }
+        .leaderboard-entry:last-child { border-bottom: none; }
+        .leaderboard-entry.current-player { background: rgba(255, 217, 61, 0.1); }
 
-        .leaderboard-entry.current-player {
-            background: rgba(255, 217, 61, 0.1);
-        }
-
-        .leaderboard-entry:nth-child(1) .entry-rank {
-            color: #ffd93d;
-            text-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
-        }
-
-        .leaderboard-entry:nth-child(2) .entry-rank {
-            color: #c0c0c0;
-        }
-
-        .leaderboard-entry:nth-child(3) .entry-rank {
-            color: #cd7f32;
-        }
+        .leaderboard-entry:nth-child(1) .entry-rank { color: #ffd93d; }
+        .leaderboard-entry:nth-child(2) .entry-rank { color: #c0c0c0; }
+        .leaderboard-entry:nth-child(3) .entry-rank { color: #cd7f32; }
 
         .entry-rank {
             font-family: 'Bebas Neue', sans-serif;
@@ -572,11 +478,9 @@
         .entry-name {
             flex: 1;
             font-size: 12px;
-            font-weight: 500;
             color: var(--text);
             text-align: left;
             margin-left: 8px;
-            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
@@ -588,13 +492,6 @@
             margin-left: 10px;
         }
 
-        .leaderboard-loading {
-            padding: 20px;
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 11px;
-        }
-
         .tap-restart {
             font-size: 12px;
             font-weight: 500;
@@ -602,16 +499,16 @@
             color: var(--text);
             text-transform: uppercase;
             animation: pulse 2s ease-in-out infinite;
-            margin-top: auto;
-            padding-top: 10px;
+            margin-top: 20px;
+            cursor: pointer;
+            padding: 20px;
         }
 
         #soundToggle {
             position: absolute;
-            top: env(safe-area-inset-top, 20px);
+            top: 20px;
             right: 20px;
-            padding-top: 24px;
-            z-index: 300;
+            z-index: 600;
         }
 
         #soundToggle button {
@@ -620,26 +517,14 @@
             border: 2px solid var(--text-dim);
             border-radius: 50%;
             background: rgba(15, 15, 19, 0.6);
-            backdrop-filter: blur(10px);
             color: var(--text);
             font-size: 18px;
             cursor: pointer;
-            transition: all 0.2s;
         }
 
-        #soundToggle button:active {
-            transform: scale(0.9);
-            border-color: var(--text);
-        }
+        #soundToggle button.off { color: var(--text-dim); }
 
-        #soundToggle button.off {
-            color: var(--text-dim);
-            border-color: rgba(90, 90, 110, 0.5);
-        }
-
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -664,13 +549,11 @@
             <div class="brand-logo">CALVEY INC.</div>
             <h1 class="game-title">STACK</h1>
             <p class="game-subtitle">Build your empire</p>
-            
             <div class="start-demo">
                 <div class="demo-block">CALVEY INC.</div>
                 <div class="demo-block">CALVEY INC.</div>
                 <div class="demo-block">CALVEY INC.</div>
             </div>
-            
             <p class="tap-start">Tap to Play</p>
         </div>
 
@@ -714,11 +597,13 @@
                         <span class="leaderboard-status" id="leaderboardStatus"></span>
                     </div>
                     <div class="leaderboard" id="leaderboard">
-                        <div class="leaderboard-loading">Loading scores...</div>
+                        <div class="leaderboard-entry">
+                            <span class="entry-name" style="text-align: center; color: var(--text-dim); width: 100%;">Loading...</span>
+                        </div>
                     </div>
                 </div>
                 
-                <p class="tap-restart">Tap to Retry</p>
+                <p class="tap-restart" id="tapRestart">Tap to Retry</p>
             </div>
         </div>
     </div>
@@ -727,7 +612,6 @@
         // ============================================================
         // CONFIGURATION
         // ============================================================
-        
         const CONFIG = {
             BLOCK_HEIGHT: 32,
             INITIAL_WIDTH: 220,
@@ -744,73 +628,17 @@
             MAX_LEADERBOARD_ENTRIES: 10
         };
 
-        // ============================================================
-        // JSONBIN.IO CONFIGURATION (Free JSON storage API)
-        // ============================================================
-        // To set up your own leaderboard:
-        // 1. Go to https://jsonbin.io and create a free account
-        // 2. Create a new bin with initial content: {"leaderboard":[]}
-        // 3. Copy the Bin ID and replace below
-        // 4. Go to API Keys, create a new key, and replace below
-        
-        const JSONBIN_CONFIG = {
-            BIN_ID: '6787a1e0ad19ca34f8e7049e', // Replace with your Bin ID
-            API_KEY: '$2a$10$YOUR_API_KEY_HERE', // Replace with your API key
-            BASE_URL: 'https://api.jsonbin.io/v3/b'
-        };
-
         const QUOTES = [
             { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
             { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-            { text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs" },
             { text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
-            { text: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
-            { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
             { text: "Fall seven times, stand up eight.", author: "Japanese Proverb" },
-            { text: "The master has failed more times than the beginner has tried.", author: "Stephen McCranie" },
-            { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
-            { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas Edison" },
             { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
-            { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
-            { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
-            { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
-            { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
             { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
-            { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
             { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
-            { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
-            { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe" },
             { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray" },
-            { text: "Dream it. Wish it. Do it.", author: "Unknown" },
-            { text: "Go confidently in the direction of your dreams.", author: "Henry David Thoreau" },
             { text: "All our dreams can come true if we have the courage to pursue them.", author: "Walt Disney" },
-            { text: "The biggest adventure you can take is to live the life of your dreams.", author: "Oprah Winfrey" },
-            { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
-            { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
-            { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
-            { text: "Life is 10% what happens to us and 90% how we react to it.", author: "Charles R. Swindoll" },
-            { text: "The only person you are destined to become is the person you decide to be.", author: "Ralph Waldo Emerson" },
-            { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
-            { text: "Great things never come from comfort zones.", author: "Unknown" },
-            { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
-            { text: "Take the risk or lose the chance.", author: "Unknown" },
-            { text: "Fortune favors the bold.", author: "Latin Proverb" },
-            { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
-            { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
-            { text: "Quality is not an act, it is a habit.", author: "Aristotle" },
-            { text: "Excellence is not a skill, it's an attitude.", author: "Ralph Marston" },
-            { text: "The only place where success comes before work is in the dictionary.", author: "Vidal Sassoon" },
-            { text: "Your limitation—it's only your imagination.", author: "Unknown" },
-            { text: "The mind is everything. What you think you become.", author: "Buddha" },
-            { text: "Positive thinking will let you do everything better than negative thinking will.", author: "Zig Ziglar" },
-            { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
-            { text: "The only way to achieve the impossible is to believe it is possible.", author: "Charles Kingsleigh" },
-            { text: "A journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
-            { text: "Progress is impossible without change.", author: "George Bernard Shaw" },
-            { text: "Small progress is still progress.", author: "Unknown" },
-            { text: "Success is a journey, not a destination.", author: "Arthur Ashe" },
-            { text: "Every accomplishment starts with the decision to try.", author: "John F. Kennedy" }
-            { text: "Don't be moody, just shake your booty.", author: "KC" }
+            { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" }
         ];
 
         const GRADIENTS = [
@@ -821,17 +649,12 @@
             ['#48c6ef', '#6f86d6'], ['#0acffe', '#495aff'], ['#43e97b', '#38f9d7'],
             ['#11998e', '#38ef7d'], ['#00b09b', '#96c93d'], ['#56ab2f', '#a8e063'],
             ['#02aab0', '#00cdac'], ['#f7971e', '#ffd200'], ['#f2994a', '#f2c94c'],
-            ['#fc4a1a', '#f7b733'], ['#f5af19', '#f12711'], ['#fceabb', '#f8b500'],
-            ['#ff9a9e', '#fecfef'], ['#ffecd2', '#fcb69f'], ['#ff6b6b', '#feca57'],
-            ['#ee9ca7', '#ffdde1'], ['#f857a6', '#ff5858'], ['#a8edea', '#fed6e3'],
-            ['#d299c2', '#fef9d7'], ['#89f7fe', '#66a6ff'], ['#96fbc4', '#f9f586'],
-            ['#c2e9fb', '#a1c4fd'], ['#1a2980', '#26d0ce']
+            ['#fc4a1a', '#f7b733'], ['#f5af19', '#f12711'], ['#fceabb', '#f8b500']
         ];
 
         // ============================================================
         // GAME STATE
         // ============================================================
-        
         const state = {
             playing: false,
             score: 0,
@@ -847,7 +670,6 @@
             direction: 1,
             speed: CONFIG.INITIAL_SPEED,
             soundEnabled: true,
-            gamesPlayed: parseInt(localStorage.getItem('calveyStackGamesPlayed') || '0'),
             username: localStorage.getItem('calveyStackUsername') || '',
             visitorId: localStorage.getItem('calveyStackVisitorId') || generateVisitorId(),
             leaderboard: []
@@ -860,118 +682,73 @@
         }
 
         // ============================================================
-        // LEADERBOARD API (Using localStorage as primary + sync attempts)
+        // LEADERBOARD (LocalStorage based - works immediately)
         // ============================================================
-        
-        async function loadGlobalLeaderboard() {
+        function loadGlobalLeaderboard() {
             const statusEl = document.getElementById('leaderboardStatus');
-            statusEl.textContent = '(loading...)';
-            statusEl.className = 'leaderboard-status loading';
+            statusEl.textContent = '(local)';
+            statusEl.className = 'leaderboard-status live';
             
-            // First, load from localStorage for instant display
             const localData = localStorage.getItem('calveyStackGlobalLeaderboard');
             if (localData) {
                 try {
                     state.leaderboard = JSON.parse(localData);
-                    renderLeaderboard();
                 } catch (e) {
                     state.leaderboard = [];
                 }
             }
-            
-            // Try to fetch from JSONBin (if configured)
-            if (JSONBIN_CONFIG.API_KEY !== '$2a$10$YOUR_API_KEY_HERE') {
-                try {
-                    const response = await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}/latest`, {
-                        method: 'GET',
-                        headers: {
-                            'X-Access-Key': JSONBIN_CONFIG.API_KEY
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data.record && data.record.leaderboard) {
-                            state.leaderboard = data.record.leaderboard;
-                            localStorage.setItem('calveyStackGlobalLeaderboard', JSON.stringify(state.leaderboard));
-                            statusEl.textContent = '(live)';
-                            statusEl.className = 'leaderboard-status live';
-                            renderLeaderboard();
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log('Could not fetch from JSONBin:', e);
-                }
-            }
-            
-            // Fallback: use localStorage only
-            statusEl.textContent = '(local)';
-            statusEl.className = 'leaderboard-status';
             renderLeaderboard();
         }
 
-        async function saveGlobalLeaderboard() {
-            // Always save to localStorage first
+        function saveGlobalLeaderboard() {
             localStorage.setItem('calveyStackGlobalLeaderboard', JSON.stringify(state.leaderboard));
-            
-            // Try to save to JSONBin (if configured)
-            if (JSONBIN_CONFIG.API_KEY !== '$2a$10$YOUR_API_KEY_HERE') {
-                try {
-                    await fetch(`${JSONBIN_CONFIG.BASE_URL}/${JSONBIN_CONFIG.BIN_ID}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Access-Key': JSONBIN_CONFIG.API_KEY
-                        },
-                        body: JSON.stringify({ leaderboard: state.leaderboard })
-                    });
-                    console.log('Leaderboard saved to JSONBin');
-                } catch (e) {
-                    console.log('Could not save to JSONBin:', e);
-                }
-            }
         }
 
-        async function updateLeaderboard(score) {
+        function updateLeaderboard(score) {
             if (!state.username || score === 0) return;
             
-            // Reload latest data first
-            await loadGlobalLeaderboard();
-            
-            // Check if player exists
             const existingIndex = state.leaderboard.findIndex(entry => entry.id === state.visitorId);
             
             if (existingIndex !== -1) {
-                // Update only if new score is higher
                 if (score > state.leaderboard[existingIndex].score) {
                     state.leaderboard[existingIndex].score = score;
                     state.leaderboard[existingIndex].name = state.username;
-                    state.leaderboard[existingIndex].timestamp = Date.now();
                 }
             } else {
-                // Add new entry
                 state.leaderboard.push({
                     id: state.visitorId,
                     name: state.username,
-                    score: score,
-                    timestamp: Date.now()
+                    score: score
                 });
             }
             
-            // Sort and trim
             state.leaderboard.sort((a, b) => b.score - a.score);
             state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
             
-            // Save
-            await saveGlobalLeaderboard();
+            saveGlobalLeaderboard();
             renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = '';
+            
+            if (state.leaderboard.length === 0) {
+                container.innerHTML = '<div class="leaderboard-entry"><span class="entry-name" style="text-align:center;color:var(--text-dim);width:100%">No scores yet!</span></div>';
+                return;
+            }
+            
+            state.leaderboard.forEach((entry, index) => {
+                const div = document.createElement('div');
+                div.className = 'leaderboard-entry' + (entry.id === state.visitorId ? ' current-player' : '');
+                div.innerHTML = `<span class="entry-rank">${index + 1}</span><span class="entry-name">${entry.name}</span><span class="entry-score">${entry.score}</span>`;
+                container.appendChild(div);
+            });
         }
 
         // ============================================================
         // CANVAS SETUP
         // ============================================================
-        
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width, height, centerX, baseY, dpr;
@@ -984,8 +761,8 @@
             canvas.height = height * dpr;
             canvas.style.width = width + 'px';
             canvas.style.height = height + 'px';
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.scale(dpr, dpr);
-            
             centerX = width / 2;
             baseY = height * 0.72;
         }
@@ -996,7 +773,6 @@
         // ============================================================
         // AUDIO
         // ============================================================
-        
         let audioCtx = null;
 
         function initAudio() {
@@ -1007,54 +783,40 @@
 
         function playSound(type) {
             if (!state.soundEnabled || !audioCtx) return;
-            
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            
-            const now = audioCtx.currentTime;
-            
-            switch(type) {
-                case 'place':
-                    const pitch = 260 + (state.stack.length * 18);
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(pitch, now);
-                    osc.frequency.exponentialRampToValueAtTime(pitch * 1.15, now + 0.08);
-                    gain.gain.setValueAtTime(0.25, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+                
+                if (type === 'place') {
+                    osc.frequency.setValueAtTime(260 + state.stack.length * 18, now);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
                     osc.start(now);
-                    osc.stop(now + 0.12);
-                    break;
-                    
-                case 'perfect':
-                    osc.type = 'sine';
+                    osc.stop(now + 0.1);
+                } else if (type === 'perfect') {
                     osc.frequency.setValueAtTime(523, now);
-                    osc.frequency.setValueAtTime(659, now + 0.07);
-                    osc.frequency.setValueAtTime(784, now + 0.14);
-                    osc.frequency.setValueAtTime(1047, now + 0.21);
-                    gain.gain.setValueAtTime(0.22, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
                     osc.start(now);
-                    osc.stop(now + 0.35);
-                    break;
-                    
-                case 'fail':
+                    osc.stop(now + 0.3);
+                } else if (type === 'fail') {
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(180, now);
-                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
-                    gain.gain.setValueAtTime(0.18, now);
-                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(50, now + 0.4);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
                     osc.start(now);
-                    osc.stop(now + 0.5);
-                    break;
-            }
+                    osc.stop(now + 0.4);
+                }
+            } catch (e) {}
         }
 
         // ============================================================
-        // LEADERBOARD UI
+        // UI FUNCTIONS
         // ============================================================
-        
         function saveUsername(name) {
             state.username = name.trim().substring(0, 12);
             localStorage.setItem('calveyStackUsername', state.username);
@@ -1064,59 +826,40 @@
         function updateUsernameDisplay() {
             const inputArea = document.getElementById('usernameInputArea');
             const displayArea = document.getElementById('usernameDisplayArea');
-            const currentUsername = document.getElementById('currentUsername');
             
             if (state.username) {
                 inputArea.classList.add('hidden');
                 displayArea.classList.remove('hidden');
-                currentUsername.textContent = state.username;
+                document.getElementById('currentUsername').textContent = state.username;
             } else {
                 inputArea.classList.remove('hidden');
                 displayArea.classList.add('hidden');
             }
         }
 
-        function renderLeaderboard() {
-            const container = document.getElementById('leaderboard');
-            container.innerHTML = '';
+        function updateUI() {
+            document.getElementById('scoreValue').textContent = state.score;
+            document.getElementById('highScoreValue').textContent = state.highScore;
             
-            if (state.leaderboard.length === 0) {
-                container.innerHTML = `
-                    <div class="leaderboard-entry">
-                        <span class="entry-name" style="text-align: center; color: var(--text-dim); width: 100%;">
-                            No scores yet. Be the first!
-                        </span>
-                    </div>
-                `;
-                return;
+            const comboEl = document.getElementById('comboDisplay');
+            if (state.combo >= 2) {
+                comboEl.textContent = '×' + state.combo + ' COMBO';
+                comboEl.classList.add('show');
+            } else {
+                comboEl.classList.remove('show');
             }
-            
-            state.leaderboard.forEach((entry, index) => {
-                const isCurrentPlayer = entry.id === state.visitorId;
-                
-                const entryEl = document.createElement('div');
-                entryEl.className = `leaderboard-entry ${isCurrentPlayer ? 'current-player' : ''}`;
-                
-                entryEl.innerHTML = `
-                    <span class="entry-rank">${index + 1}</span>
-                    <span class="entry-name">${escapeHtml(entry.name)}</span>
-                    <span class="entry-score">${entry.score}</span>
-                `;
-                
-                container.appendChild(entryEl);
-            });
         }
 
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        function showPerfect() {
+            const el = document.getElementById('perfectIndicator');
+            el.classList.remove('show');
+            void el.offsetWidth;
+            el.classList.add('show');
         }
 
         // ============================================================
-        // DRAWING UTILITIES
+        // DRAWING
         // ============================================================
-        
         function roundRect(context, x, y, w, h, r) {
             context.beginPath();
             context.moveTo(x + r, y);
@@ -1139,60 +882,36 @@
             return gradient;
         }
 
-        function drawBlock(x, y, w, h, colorIndex, isMoving = false) {
+        function drawBlock(x, y, w, h, colorIndex, isMoving) {
             const left = x - w / 2;
-            const radius = CONFIG.BORDER_RADIUS;
             
             ctx.save();
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
-            ctx.shadowBlur = 20;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 8;
-            
-            roundRect(ctx, left, y, w, h, radius);
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetY = 6;
+            roundRect(ctx, left, y, w, h, CONFIG.BORDER_RADIUS);
             ctx.fillStyle = getGradient(ctx, colorIndex, left, y, w, h);
             ctx.fill();
             ctx.restore();
-            
-            roundRect(ctx, left, y, w, h, radius);
+
+            roundRect(ctx, left, y, w, h, CONFIG.BORDER_RADIUS);
             ctx.fillStyle = getGradient(ctx, colorIndex, left, y, w, h);
             ctx.fill();
-            
+
             ctx.save();
             ctx.globalAlpha = 0.25;
-            roundRect(ctx, left, y, w, h * 0.4, radius);
-            ctx.fillStyle = '#ffffff';
+            roundRect(ctx, left, y, w, h * 0.4, CONFIG.BORDER_RADIUS);
+            ctx.fillStyle = '#fff';
             ctx.fill();
             ctx.restore();
-            
-            ctx.save();
-            ctx.globalAlpha = 0.15;
-            roundRect(ctx, left, y + h * 0.7, w, h * 0.3, radius);
-            ctx.fillStyle = '#000000';
-            ctx.fill();
-            ctx.restore();
-            
+
             if (w > 60) {
                 ctx.save();
-                const fontSize = Math.min(9, w * 0.045);
-                ctx.font = `600 ${fontSize}px 'IBM Plex Mono', monospace`;
+                ctx.font = '600 8px IBM Plex Mono, monospace';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
-                ctx.fillText('CALVEY INC.', x + 1, y + h / 2 + 1);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
                 ctx.fillText('CALVEY INC.', x, y + h / 2);
-                ctx.restore();
-            }
-            
-            if (isMoving) {
-                ctx.save();
-                ctx.shadowColor = GRADIENTS[colorIndex % GRADIENTS.length][0];
-                ctx.shadowBlur = 25;
-                roundRect(ctx, left, y, w, h, radius);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
                 ctx.restore();
             }
         }
@@ -1200,19 +919,17 @@
         function drawTowerGraphic(score, highScore) {
             const tCanvas = document.getElementById('towerCanvas');
             const tCtx = tCanvas.getContext('2d');
-            const tWidth = 160;
-            const tHeight = 120;
-            
+            const tWidth = 160, tHeight = 120;
             const tdpr = window.devicePixelRatio || 1;
+            
             tCanvas.width = tWidth * tdpr;
             tCanvas.height = tHeight * tdpr;
             tCanvas.style.width = tWidth + 'px';
             tCanvas.style.height = tHeight + 'px';
             tCtx.setTransform(1, 0, 0, 1, 0, 0);
             tCtx.scale(tdpr, tdpr);
-            
             tCtx.clearRect(0, 0, tWidth, tHeight);
-            
+
             const blocksToShow = Math.min(Math.max(score, 0), 10);
             
             if (blocksToShow === 0) {
@@ -1222,141 +939,33 @@
                 tCtx.fillText('Keep trying!', tWidth / 2, tHeight / 2);
                 return;
             }
-            
-            const blockHeight = 10;
-            const gap = 2;
-            const maxBlockWidth = 80;
-            const minBlockWidth = 30;
-            const tcenterX = tWidth / 2;
-            
-            const towerHeight = blocksToShow * (blockHeight + gap);
-            const startY = tHeight - 12;
-            
-            tCtx.strokeStyle = '#3a3a4e';
-            tCtx.lineWidth = 1;
-            tCtx.beginPath();
-            tCtx.moveTo(20, startY + 5);
-            tCtx.lineTo(tWidth - 20, startY + 5);
-            tCtx.stroke();
+
+            const blockHeight = 10, gap = 2;
+            const startY = tHeight - 15;
             
             for (let i = 0; i < blocksToShow; i++) {
-                const widthRatio = 1 - (i * 0.04);
-                const blockWidth = Math.max(maxBlockWidth * widthRatio, minBlockWidth);
-                
-                const y = startY - (i * (blockHeight + gap)) - blockHeight;
-                const x = tcenterX - blockWidth / 2;
+                const blockWidth = Math.max(80 - i * 3, 30);
+                const y = startY - i * (blockHeight + gap) - blockHeight;
+                const x = (tWidth - blockWidth) / 2;
                 
                 const colors = GRADIENTS[i % GRADIENTS.length];
                 const gradient = tCtx.createLinearGradient(x, y, x + blockWidth, y + blockHeight);
                 gradient.addColorStop(0, colors[0]);
                 gradient.addColorStop(1, colors[1]);
                 
-                tCtx.save();
-                tCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-                tCtx.shadowBlur = 5;
-                tCtx.shadowOffsetY = 2;
-                roundRect(tCtx, x, y, blockWidth, blockHeight, 3);
                 tCtx.fillStyle = gradient;
-                tCtx.fill();
-                tCtx.restore();
-                
-                roundRect(tCtx, x, y, blockWidth, blockHeight, 3);
-                tCtx.fillStyle = gradient;
-                tCtx.fill();
-                
-                tCtx.save();
-                tCtx.globalAlpha = 0.3;
-                roundRect(tCtx, x, y, blockWidth, blockHeight * 0.4, 3);
-                tCtx.fillStyle = '#ffffff';
-                tCtx.fill();
-                tCtx.restore();
-            }
-            
-            if (highScore > 0 && score > 0) {
-                const percentage = Math.min((score / highScore) * 100, 100);
-                
-                const barWidth = 80;
-                const barHeight = 4;
-                const barX = (tWidth - barWidth) / 2;
-                const barY = tHeight - 6;
-                
-                tCtx.fillStyle = '#2a2a3e';
-                roundRect(tCtx, barX, barY, barWidth, barHeight, 2);
-                tCtx.fill();
-                
-                if (percentage > 0) {
-                    const fillWidth = (barWidth * percentage) / 100;
-                    const fillGradient = tCtx.createLinearGradient(barX, barY, barX + fillWidth, barY);
-                    
-                    if (percentage >= 100) {
-                        fillGradient.addColorStop(0, '#ffd93d');
-                        fillGradient.addColorStop(1, '#ffed4a');
-                    } else if (percentage >= 75) {
-                        fillGradient.addColorStop(0, '#43e97b');
-                        fillGradient.addColorStop(1, '#38f9d7');
-                    } else if (percentage >= 50) {
-                        fillGradient.addColorStop(0, '#4facfe');
-                        fillGradient.addColorStop(1, '#00f2fe');
-                    } else {
-                        fillGradient.addColorStop(0, '#667eea');
-                        fillGradient.addColorStop(1, '#764ba2');
-                    }
-                    
-                    roundRect(tCtx, barX, barY, fillWidth, barHeight, 2);
-                    tCtx.fillStyle = fillGradient;
-                    tCtx.fill();
-                }
-            }
-            
-            if (score >= 5) {
-                const sparkleCount = Math.min(Math.floor(score / 3), 6);
-                for (let i = 0; i < sparkleCount; i++) {
-                    const sx = 20 + Math.random() * (tWidth - 40);
-                    const sy = 10 + Math.random() * 35;
-                    const size = 1.5 + Math.random() * 2;
-                    
-                    tCtx.save();
-                    tCtx.fillStyle = '#ffd93d';
-                    tCtx.shadowColor = '#ffd93d';
-                    tCtx.shadowBlur = 8;
-                    tCtx.beginPath();
-                    tCtx.arc(sx, sy, size, 0, Math.PI * 2);
-                    tCtx.fill();
-                    tCtx.restore();
-                }
-            }
-            
-            if (score >= highScore && score > 0) {
-                const crownY = startY - towerHeight - 18;
-                tCtx.save();
-                tCtx.fillStyle = '#ffd93d';
-                tCtx.shadowColor = '#ffd93d';
-                tCtx.shadowBlur = 10;
-                
                 tCtx.beginPath();
-                tCtx.moveTo(tcenterX - 10, crownY + 8);
-                tCtx.lineTo(tcenterX - 10, crownY + 3);
-                tCtx.lineTo(tcenterX - 6, crownY + 5);
-                tCtx.lineTo(tcenterX - 3, crownY);
-                tCtx.lineTo(tcenterX, crownY + 4);
-                tCtx.lineTo(tcenterX + 3, crownY);
-                tCtx.lineTo(tcenterX + 6, crownY + 5);
-                tCtx.lineTo(tcenterX + 10, crownY + 3);
-                tCtx.lineTo(tcenterX + 10, crownY + 8);
-                tCtx.closePath();
+                tCtx.roundRect(x, y, blockWidth, blockHeight, 3);
                 tCtx.fill();
-                tCtx.restore();
             }
         }
 
         // ============================================================
         // BLOCK MANAGEMENT
         // ============================================================
-        
-        function createBlock(y, blockWidth, fromLeft = true) {
-            const x = fromLeft ? -blockWidth / 2 : width + blockWidth / 2;
+        function createBlock(y, blockWidth, fromLeft) {
             return {
-                x: x,
+                x: fromLeft ? -blockWidth / 2 : width + blockWidth / 2,
                 y: y,
                 width: blockWidth,
                 height: CONFIG.BLOCK_HEIGHT,
@@ -1368,106 +977,85 @@
             const lastBlock = state.stack[state.stack.length - 1];
             const newY = lastBlock.y - CONFIG.BLOCK_HEIGHT - 4;
             const fromLeft = state.direction > 0;
-            
             state.current = createBlock(newY, lastBlock.width, !fromLeft);
             state.direction = fromLeft ? -1 : 1;
         }
 
         function placeBlock() {
             if (!state.current || state.current.placed) return;
-            
+
             const current = state.current;
             const last = state.stack[state.stack.length - 1];
-            
+
             const currentLeft = current.x - current.width / 2;
             const currentRight = current.x + current.width / 2;
             const lastLeft = last.x - last.width / 2;
             const lastRight = last.x + last.width / 2;
-            
+
             const overlapLeft = Math.max(currentLeft, lastLeft);
             const overlapRight = Math.min(currentRight, lastRight);
             const overlapWidth = overlapRight - overlapLeft;
-            
+
             if (overlapWidth <= 0) {
-                createFallingPiece(current.x, current.y, current.width, state.stack.length);
+                state.falling.push({
+                    x: current.x, y: current.y, width: current.width, height: CONFIG.BLOCK_HEIGHT,
+                    vy: -2, vx: (current.x > centerX ? 1 : -1) * 4, rotation: 0,
+                    rotationSpeed: (Math.random() - 0.5) * 0.2, colorIndex: state.stack.length
+                });
                 gameOver();
                 return;
             }
-            
+
             const offset = Math.abs(current.x - last.x);
             const isPerfect = offset <= CONFIG.PERFECT_TOLERANCE;
-            
+
             if (isPerfect) {
                 state.combo++;
                 state.perfects++;
-                
                 const growAmount = Math.min(state.combo * CONFIG.GROW_AMOUNT, CONFIG.MAX_GROW);
                 current.width = Math.min(last.width + growAmount, CONFIG.INITIAL_WIDTH);
                 current.x = last.x;
-                
                 showPerfect();
                 playSound('perfect');
-                
-                if (state.combo > state.maxCombo) {
-                    state.maxCombo = state.combo;
-                }
+                if (state.combo > state.maxCombo) state.maxCombo = state.combo;
             } else {
                 state.combo = 0;
-                
                 const cutWidth = current.width - overlapWidth;
                 if (cutWidth > 3) {
-                    const cutX = current.x > last.x ? 
-                        overlapRight + cutWidth / 2 : 
-                        overlapLeft - cutWidth / 2;
-                    createFallingPiece(cutX, current.y, cutWidth, state.stack.length);
+                    const cutX = current.x > last.x ? overlapRight + cutWidth / 2 : overlapLeft - cutWidth / 2;
+                    state.falling.push({
+                        x: cutX, y: current.y, width: cutWidth, height: CONFIG.BLOCK_HEIGHT,
+                        vy: -2, vx: (cutX > centerX ? 1 : -1) * 4, rotation: 0,
+                        rotationSpeed: (Math.random() - 0.5) * 0.2, colorIndex: state.stack.length
+                    });
                 }
-                
                 current.width = overlapWidth;
                 current.x = overlapLeft + overlapWidth / 2;
-                
                 playSound('place');
             }
-            
+
             if (current.width < CONFIG.MIN_WIDTH) {
                 gameOver();
                 return;
             }
-            
+
             current.placed = true;
             state.stack.push(current);
             state.score++;
-            
             state.targetCameraY = Math.max(0, (state.stack.length - CONFIG.STACK_VISIBLE) * (CONFIG.BLOCK_HEIGHT + 4));
             state.speed = Math.min(CONFIG.INITIAL_SPEED + state.score * CONFIG.SPEED_INCREMENT, CONFIG.MAX_SPEED);
-            
             updateUI();
             spawnNextBlock();
-        }
-
-        function createFallingPiece(x, y, pieceWidth, colorIndex) {
-            state.falling.push({
-                x: x,
-                y: y,
-                width: pieceWidth,
-                height: CONFIG.BLOCK_HEIGHT,
-                vy: -2,
-                vx: (x > centerX ? 1 : -1) * (3 + Math.random() * 3),
-                rotation: 0,
-                rotationSpeed: (Math.random() - 0.5) * 0.2,
-                colorIndex: colorIndex
-            });
         }
 
         // ============================================================
         // GAME LOOP
         // ============================================================
-        
         function update() {
             if (!state.playing) return;
-            
+
             if (state.current && !state.current.placed) {
                 state.current.x += state.speed * state.direction;
-                
                 const halfWidth = state.current.width / 2;
                 if (state.current.x + halfWidth > width - 10) {
                     state.current.x = width - halfWidth - 10;
@@ -1477,9 +1065,9 @@
                     state.direction = 1;
                 }
             }
-            
+
             state.cameraY += (state.targetCameraY - state.cameraY) * CONFIG.CAMERA_LERP;
-            
+
             state.falling = state.falling.filter(piece => {
                 piece.vy += 0.6;
                 piece.y += piece.vy;
@@ -1491,31 +1079,27 @@
 
         function render() {
             ctx.clearRect(0, 0, width, height);
-            
+
             state.stack.forEach((block, i) => {
                 const screenY = block.y + state.cameraY;
                 if (screenY > height + CONFIG.BLOCK_HEIGHT || screenY < -CONFIG.BLOCK_HEIGHT * 2) return;
-                drawBlock(block.x, screenY, block.width, block.height, i);
+                drawBlock(block.x, screenY, block.width, block.height, i, false);
             });
-            
+
             if (state.current && !state.current.placed) {
-                const block = state.current;
-                const screenY = block.y + state.cameraY;
-                drawBlock(block.x, screenY, block.width, block.height, state.stack.length, true);
+                const screenY = state.current.y + state.cameraY;
+                drawBlock(state.current.x, screenY, state.current.width, state.current.height, state.stack.length, true);
             }
-            
+
             state.falling.forEach(piece => {
                 ctx.save();
-                const screenY = piece.y + state.cameraY;
-                ctx.translate(piece.x, screenY + piece.height / 2);
+                ctx.translate(piece.x, piece.y + state.cameraY + piece.height / 2);
                 ctx.rotate(piece.rotation);
                 ctx.globalAlpha = 0.85;
-                
                 const gradient = getGradient(ctx, piece.colorIndex, -piece.width / 2, -piece.height / 2, piece.width, piece.height);
                 roundRect(ctx, -piece.width / 2, -piece.height / 2, piece.width, piece.height, CONFIG.BORDER_RADIUS);
                 ctx.fillStyle = gradient;
                 ctx.fill();
-                
                 ctx.restore();
             });
         }
@@ -1527,40 +1111,12 @@
         }
 
         // ============================================================
-        // UI
-        // ============================================================
-        
-        function updateUI() {
-            document.getElementById('scoreValue').textContent = state.score;
-            document.getElementById('highScoreValue').textContent = state.highScore;
-            
-            const comboEl = document.getElementById('comboDisplay');
-            if (state.combo >= 2) {
-                comboEl.textContent = `×${state.combo} COMBO`;
-                comboEl.classList.add('show');
-            } else {
-                comboEl.classList.remove('show');
-            }
-        }
-
-        function showPerfect() {
-            const el = document.getElementById('perfectIndicator');
-            el.classList.remove('show');
-            void el.offsetWidth;
-            el.classList.add('show');
-        }
-
-        function getRandomQuote() {
-            return QUOTES[Math.floor(Math.random() * QUOTES.length)];
-        }
-
-        // ============================================================
         // GAME FLOW
         // ============================================================
-        
         function startGame() {
+            console.log('Starting game...');
             initAudio();
-            
+
             state.playing = true;
             state.score = 0;
             state.combo = 0;
@@ -1571,7 +1127,7 @@
             state.targetCameraY = 0;
             state.falling = [];
             state.direction = 1;
-            
+
             state.stack = [{
                 x: centerX,
                 y: baseY,
@@ -1579,110 +1135,117 @@
                 height: CONFIG.BLOCK_HEIGHT,
                 placed: true
             }];
-            
+
             spawnNextBlock();
             updateUI();
-            
+
             document.getElementById('startScreen').classList.add('hidden');
             document.getElementById('gameOverScreen').classList.remove('visible');
             document.getElementById('tapHint').style.display = 'block';
         }
 
-        async function gameOver() {
+        function gameOver() {
             state.playing = false;
             state.current = null;
-            
-            state.gamesPlayed++;
-            localStorage.setItem('calveyStackGamesPlayed', state.gamesPlayed.toString());
-            
             playSound('fail');
-            
+
             const isNewRecord = state.score > state.highScore;
             if (isNewRecord) {
                 state.highScore = state.score;
                 localStorage.setItem('calveyStackHighScore', state.highScore.toString());
             }
-            
-            // Update leaderboard
-            await updateLeaderboard(state.score);
-            
+
+            updateLeaderboard(state.score);
             drawTowerGraphic(state.score, state.highScore);
             updateUsernameDisplay();
-            
-            const quote = getRandomQuote();
-            document.getElementById('quoteText').textContent = `"${quote.text}"`;
-            document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
-            
+
+            const quote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+            document.getElementById('quoteText').textContent = '"' + quote.text + '"';
+            document.getElementById('quoteAuthor').textContent = '— ' + quote.author;
+
             document.getElementById('finalScore').textContent = state.score;
             document.getElementById('perfectCount').textContent = state.perfects;
             document.getElementById('bestCombo').textContent = state.maxCombo;
-            document.getElementById('newRecordBadge').classList.toggle('visible', isNewRecord);
             
+            const badge = document.getElementById('newRecordBadge');
+            if (isNewRecord) {
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+
             document.getElementById('tapHint').style.display = 'none';
-            
+
             setTimeout(() => {
                 document.getElementById('gameOverScreen').classList.add('visible');
-            }, 600);
+            }, 500);
         }
 
         // ============================================================
-        // INPUT
+        // EVENT HANDLERS
         // ============================================================
-        
-        function handleTap(e) {
+        function handleGameTap(e) {
             if (e.target.closest('#soundToggle')) return;
-            if (e.target.closest('.username-section')) return;
             if (!state.playing) return;
             e.preventDefault();
             placeBlock();
         }
 
-        document.getElementById('gameContainer').addEventListener('touchstart', handleTap);
-        document.getElementById('gameContainer').addEventListener('mousedown', handleTap);
-
-        document.getElementById('startScreen').addEventListener('click', startGame);
-        document.getElementById('startScreen').addEventListener('touchend', (e) => {
+        // Start screen click
+        document.getElementById('startScreen').addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             startGame();
         });
 
-        document.getElementById('gameOverScreen').addEventListener('click', (e) => {
+        // Game tap during play
+        document.getElementById('gameCanvas').addEventListener('click', handleGameTap);
+        document.getElementById('gameCanvas').addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            handleGameTap(e);
+        });
+
+        // Tap restart
+        document.getElementById('tapRestart').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            startGame();
+        });
+
+        // Also allow tapping anywhere on game over screen (except interactive elements)
+        document.getElementById('gameOverScreen').addEventListener('click', function(e) {
             if (e.target.closest('.username-section')) return;
             if (e.target.closest('.leaderboard-section')) return;
-            startGame();
-        });
-        document.getElementById('gameOverScreen').addEventListener('touchend', (e) => {
-            if (e.target.closest('.username-section')) return;
-            if (e.target.closest('.leaderboard-section')) return;
-            e.preventDefault();
+            if (e.target.id === 'tapRestart') return;
             startGame();
         });
 
-        document.getElementById('saveUsernameBtn').addEventListener('click', async (e) => {
+        // Username handlers
+        document.getElementById('saveUsernameBtn').addEventListener('click', function(e) {
             e.stopPropagation();
             const input = document.getElementById('usernameInput');
             if (input.value.trim()) {
                 saveUsername(input.value);
-                await updateLeaderboard(state.score);
+                updateLeaderboard(state.score);
             }
         });
 
-        document.getElementById('usernameInput').addEventListener('keypress', async (e) => {
+        document.getElementById('usernameInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 const input = document.getElementById('usernameInput');
                 if (input.value.trim()) {
                     saveUsername(input.value);
-                    await updateLeaderboard(state.score);
+                    updateLeaderboard(state.score);
                 }
             }
         });
 
-        document.getElementById('usernameInput').addEventListener('click', (e) => {
+        document.getElementById('usernameInput').addEventListener('click', function(e) {
             e.stopPropagation();
         });
 
-        document.getElementById('changeNameBtn').addEventListener('click', (e) => {
+        document.getElementById('changeNameBtn').addEventListener('click', function(e) {
             e.stopPropagation();
             document.getElementById('usernameInputArea').classList.remove('hidden');
             document.getElementById('usernameDisplayArea').classList.add('hidden');
@@ -1690,27 +1253,23 @@
             document.getElementById('usernameInput').focus();
         });
 
-        document.getElementById('soundBtn').addEventListener('click', (e) => {
+        // Sound toggle
+        document.getElementById('soundBtn').addEventListener('click', function(e) {
             e.stopPropagation();
             state.soundEnabled = !state.soundEnabled;
-            e.target.classList.toggle('off', !state.soundEnabled);
-            e.target.textContent = state.soundEnabled ? '♪' : '✕';
+            this.classList.toggle('off', !state.soundEnabled);
+            this.textContent = state.soundEnabled ? '♪' : '✕';
         });
-
-        document.addEventListener('touchmove', (e) => {
-            if (!e.target.closest('.username-input') && !e.target.closest('#gameOverScreen')) {
-                e.preventDefault();
-            }
-        }, { passive: false });
 
         // ============================================================
         // INIT
         // ============================================================
-        
         document.getElementById('highScoreValue').textContent = state.highScore;
         updateUsernameDisplay();
         loadGlobalLeaderboard();
         gameLoop();
+
+        console.log('Game initialized');
     </script>
 </body>
 </html>
