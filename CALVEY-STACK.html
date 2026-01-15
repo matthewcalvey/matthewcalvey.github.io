@@ -45,7 +45,6 @@
         background: linear-gradient(180deg, var(--bg) 0%, var(--bg-lighter) 100%);
     }
 
-    /* Subtle grid pattern */
     #gameContainer::before {
         content: '';
         position: absolute;
@@ -60,7 +59,6 @@
         pointer-events: none;
     }
 
-    /* Score display */
     #scoreDisplay {
         position: absolute;
         top: env(safe-area-inset-top, 20px);
@@ -95,7 +93,6 @@
         letter-spacing: 0.1em;
     }
 
-    /* Perfect indicator */
     #perfectIndicator {
         position: absolute;
         top: 48%;
@@ -123,7 +120,6 @@
         100% { opacity: 0; transform: translate(-50%, -50%) scale(1) translateY(-40px); }
     }
 
-    /* Combo display */
     #comboDisplay {
         position: absolute;
         top: 43%;
@@ -144,13 +140,11 @@
         opacity: 1;
     }
 
-    /* Game canvas */
     #gameCanvas {
         width: 100%;
         height: 100%;
     }
 
-    /* Controls hint */
     #tapHint {
         position: absolute;
         bottom: calc(env(safe-area-inset-bottom, 20px) + 50px);
@@ -277,24 +271,21 @@
         text-transform: uppercase;
     }
 
-    /* Game over screen - FIXED CENTERING */
+    /* GAME OVER SCREEN - PROPERLY CENTERED */
     #gameOverScreen {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
         z-index: 500;
         background: rgba(15, 15, 19, 0.97);
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.4s;
-        padding: 20px;
-        overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     #gameOverScreen.visible {
@@ -302,29 +293,28 @@
         pointer-events: auto;
     }
 
-    .game-over-content {
+    .game-over-wrapper {
+        width: 100%;
+        max-width: 340px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
         text-align: center;
-        width: 100%;
-        max-width: 360px;
+        padding: 20px;
     }
 
-    /* Tower graphic */
     .tower-graphic {
-        position: relative;
-        width: 100%;
-        height: 120px;
-        margin-bottom: 20px;
+        width: 180px;
+        height: 140px;
+        margin-bottom: 16px;
         display: flex;
         align-items: flex-end;
         justify-content: center;
     }
 
-    .tower-graphic canvas {
-        max-width: 200px;
+    #towerCanvas {
+        width: 180px;
+        height: 140px;
     }
 
     .game-over-label {
@@ -333,15 +323,15 @@
         letter-spacing: 0.4em;
         color: var(--text-dim);
         text-transform: uppercase;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
     }
 
     .final-score {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: clamp(70px, 22vw, 110px);
+        font-size: 90px;
         color: var(--text);
         line-height: 1;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         text-shadow: 0 4px 30px rgba(0,0,0,0.3);
     }
 
@@ -349,9 +339,8 @@
         font-size: 11px;
         font-weight: 500;
         color: var(--text-dim);
-        text-align: center;
-        line-height: 2;
-        margin-bottom: 20px;
+        line-height: 1.8;
+        margin-bottom: 16px;
         letter-spacing: 0.05em;
     }
 
@@ -365,15 +354,17 @@
         letter-spacing: 0.25em;
         color: var(--perfect);
         border: 2px solid var(--perfect);
-        padding: 12px 28px;
+        padding: 10px 24px;
         border-radius: 6px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
         opacity: 0;
+        visibility: hidden;
         text-shadow: 0 0 20px var(--perfect);
     }
 
     .new-record.visible {
         opacity: 1;
+        visibility: visible;
         animation: recordGlow 1.5s ease-in-out infinite;
     }
 
@@ -382,26 +373,23 @@
         50% { box-shadow: 0 0 20px 5px rgba(255, 217, 61, 0.2); }
     }
 
-    /* Quote section */
     .quote-section {
         width: 100%;
-        max-width: 320px;
-        text-align: center;
-        margin-bottom: 28px;
-        padding: 0 10px;
+        max-width: 300px;
+        margin-bottom: 24px;
     }
 
     .quote-text {
         font-family: 'Playfair Display', serif;
         font-style: italic;
-        font-size: 15px;
-        line-height: 1.7;
+        font-size: 14px;
+        line-height: 1.6;
         color: var(--text-quote);
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
     .quote-author {
-        font-size: 10px;
+        font-size: 9px;
         font-weight: 600;
         letter-spacing: 0.2em;
         color: var(--text-dim);
@@ -409,7 +397,7 @@
     }
 
     .tap-restart {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 500;
         letter-spacing: 0.35em;
         color: var(--text);
@@ -417,7 +405,6 @@
         animation: pulse 2s ease-in-out infinite;
     }
 
-    /* Sound toggle */
     #soundToggle {
         position: absolute;
         top: env(safe-area-inset-top, 20px);
@@ -457,23 +444,16 @@
         <canvas id="gameCanvas"></canvas>
 
 ```
-    <!-- Score -->
     <div id="scoreDisplay">
         <div class="score-label">Score</div>
         <div class="score-value" id="scoreValue">0</div>
         <div class="high-score">Best: <span id="highScoreValue">0</span></div>
     </div>
 
-    <!-- Perfect indicator -->
     <div id="perfectIndicator">PERFECT</div>
-    
-    <!-- Combo display -->
     <div id="comboDisplay">×1 COMBO</div>
-
-    <!-- Tap hint -->
     <div id="tapHint">Tap to place</div>
 
-    <!-- Sound toggle -->
     <div id="soundToggle">
         <button id="soundBtn">♪</button>
     </div>
@@ -493,12 +473,11 @@
         <p class="tap-start">Tap to Play</p>
     </div>
 
-    <!-- Game over screen -->
+    <!-- Game over screen - FIXED STRUCTURE -->
     <div id="gameOverScreen">
-        <div class="game-over-content">
-            <!-- Tower graphic -->
+        <div class="game-over-wrapper">
             <div class="tower-graphic">
-                <canvas id="towerCanvas" width="200" height="120"></canvas>
+                <canvas id="towerCanvas"></canvas>
             </div>
             
             <div class="game-over-label">Final Score</div>
@@ -540,70 +519,51 @@
 
     // Expanded encouraging quotes
     const QUOTES = [
-        // Leadership & Success
         { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
         { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
         { text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs" },
         { text: "The best way to predict the future is to create it.", author: "Peter Drucker" },
         { text: "Your time is limited, don't waste it living someone else's life.", author: "Steve Jobs" },
-        
-        // Persistence & Growth
         { text: "It does not matter how slowly you go as long as you do not stop.", author: "Confucius" },
         { text: "Fall seven times, stand up eight.", author: "Japanese Proverb" },
         { text: "The master has failed more times than the beginner has tried.", author: "Stephen McCranie" },
         { text: "Every strike brings me closer to the next home run.", author: "Babe Ruth" },
         { text: "I have not failed. I've just found 10,000 ways that won't work.", author: "Thomas Edison" },
-        
-        // Belief & Confidence
         { text: "Believe you can and you're halfway there.", author: "Theodore Roosevelt" },
         { text: "Whether you think you can or you think you can't, you're right.", author: "Henry Ford" },
         { text: "The future belongs to those who believe in the beauty of their dreams.", author: "Eleanor Roosevelt" },
         { text: "What lies behind us and what lies before us are tiny matters compared to what lies within us.", author: "Ralph Waldo Emerson" },
         { text: "The only impossible journey is the one you never begin.", author: "Tony Robbins" },
-        
-        // Action & Effort
         { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
         { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
         { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
         { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
         { text: "Start where you are. Use what you have. Do what you can.", author: "Arthur Ashe" },
-        
-        // Vision & Dreams
         { text: "Build your own dreams, or someone else will hire you to build theirs.", author: "Farrah Gray" },
         { text: "Dream it. Wish it. Do it.", author: "Unknown" },
         { text: "Go confidently in the direction of your dreams.", author: "Henry David Thoreau" },
         { text: "All our dreams can come true if we have the courage to pursue them.", author: "Walt Disney" },
         { text: "The biggest adventure you can take is to live the life of your dreams.", author: "Oprah Winfrey" },
-        
-        // Wisdom & Philosophy
         { text: "Strive not to be a success, but rather to be of value.", author: "Albert Einstein" },
         { text: "The best time to plant a tree was 20 years ago. The second best time is now.", author: "Chinese Proverb" },
         { text: "In the middle of difficulty lies opportunity.", author: "Albert Einstein" },
         { text: "Life is 10% what happens to us and 90% how we react to it.", author: "Charles R. Swindoll" },
         { text: "The only person you are destined to become is the person you decide to be.", author: "Ralph Waldo Emerson" },
-        
-        // Courage & Risk
         { text: "Everything you've ever wanted is on the other side of fear.", author: "George Addair" },
         { text: "Great things never come from comfort zones.", author: "Unknown" },
         { text: "Don't be afraid to give up the good to go for the great.", author: "John D. Rockefeller" },
         { text: "Take the risk or lose the chance.", author: "Unknown" },
         { text: "Fortune favors the bold.", author: "Latin Proverb" },
-        
-        // Work & Excellence
         { text: "I find that the harder I work, the more luck I seem to have.", author: "Thomas Jefferson" },
         { text: "Success usually comes to those who are too busy to be looking for it.", author: "Henry David Thoreau" },
         { text: "Quality is not an act, it is a habit.", author: "Aristotle" },
         { text: "Excellence is not a skill, it's an attitude.", author: "Ralph Marston" },
         { text: "The only place where success comes before work is in the dictionary.", author: "Vidal Sassoon" },
-        
-        // Mindset & Attitude
         { text: "Your limitation—it's only your imagination.", author: "Unknown" },
         { text: "The mind is everything. What you think you become.", author: "Buddha" },
         { text: "Positive thinking will let you do everything better than negative thinking will.", author: "Zig Ziglar" },
         { text: "You are never too old to set another goal or to dream a new dream.", author: "C.S. Lewis" },
         { text: "The only way to achieve the impossible is to believe it is possible.", author: "Charles Kingsleigh" },
-        
-        // Progress & Journey
         { text: "A journey of a thousand miles begins with a single step.", author: "Lao Tzu" },
         { text: "Progress is impossible without change.", author: "George Bernard Shaw" },
         { text: "Small progress is still progress.", author: "Unknown" },
@@ -611,63 +571,43 @@
         { text: "Every accomplishment starts with the decision to try.", author: "John F. Kennedy" }
     ];
 
-    // Expanded beautiful gradient pairs for blocks
+    // Expanded gradient colors
     const GRADIENTS = [
-        // Purples & Violets
         ['#667eea', '#764ba2'],
         ['#6a11cb', '#2575fc'],
         ['#7f00ff', '#e100ff'],
         ['#8e2de2', '#4a00e0'],
         ['#b721ff', '#21d4fd'],
-        
-        // Pinks & Magentas
         ['#f093fb', '#f5576c'],
         ['#ff0844', '#ffb199'],
         ['#fa709a', '#fee140'],
         ['#ff758c', '#ff7eb3'],
         ['#c471f5', '#fa71cd'],
-        
-        // Blues & Cyans
         ['#4facfe', '#00f2fe'],
         ['#00c6fb', '#005bea'],
         ['#48c6ef', '#6f86d6'],
         ['#0acffe', '#495aff'],
-        ['#667eea', '#764ba2'],
-        
-        // Greens & Teals
         ['#43e97b', '#38f9d7'],
         ['#11998e', '#38ef7d'],
         ['#00b09b', '#96c93d'],
         ['#56ab2f', '#a8e063'],
         ['#02aab0', '#00cdac'],
-        
-        // Oranges & Yellows
         ['#f7971e', '#ffd200'],
         ['#f2994a', '#f2c94c'],
         ['#fc4a1a', '#f7b733'],
         ['#f5af19', '#f12711'],
         ['#fceabb', '#f8b500'],
-        
-        // Warm Tones
         ['#ff9a9e', '#fecfef'],
         ['#ffecd2', '#fcb69f'],
         ['#ff6b6b', '#feca57'],
         ['#ee9ca7', '#ffdde1'],
         ['#f857a6', '#ff5858'],
-        
-        // Cool Tones
         ['#a8edea', '#fed6e3'],
         ['#d299c2', '#fef9d7'],
         ['#89f7fe', '#66a6ff'],
         ['#96fbc4', '#f9f586'],
         ['#c2e9fb', '#a1c4fd'],
-        
-        // Rich & Deep
-        ['#1a2980', '#26d0ce'],
-        ['#134e5e', '#71b280'],
-        ['#0f2027', '#2c5364'],
-        ['#373b44', '#4286f4'],
-        ['#200122', '#6f0000']
+        ['#1a2980', '#26d0ce']
     ];
 
     // ============================================================
@@ -688,7 +628,8 @@
         targetCameraY: 0,
         direction: 1,
         speed: CONFIG.INITIAL_SPEED,
-        soundEnabled: true
+        soundEnabled: true,
+        gamesPlayed: parseInt(localStorage.getItem('calveyStackGamesPlayed') || '0')
     };
 
     // ============================================================
@@ -697,8 +638,6 @@
     
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const towerCanvas = document.getElementById('towerCanvas');
-    const towerCtx = towerCanvas.getContext('2d');
     let width, height, centerX, baseY, dpr;
 
     function resize() {
@@ -806,7 +745,6 @@
         const left = x - w / 2;
         const radius = CONFIG.BORDER_RADIUS;
         
-        // Shadow
         ctx.save();
         ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
         ctx.shadowBlur = 20;
@@ -818,12 +756,10 @@
         ctx.fill();
         ctx.restore();
         
-        // Main block
         roundRect(ctx, left, y, w, h, radius);
         ctx.fillStyle = getGradient(ctx, colorIndex, left, y, w, h);
         ctx.fill();
         
-        // Top highlight
         ctx.save();
         ctx.globalAlpha = 0.25;
         roundRect(ctx, left, y, w, h * 0.4, radius);
@@ -831,7 +767,6 @@
         ctx.fill();
         ctx.restore();
         
-        // Bottom edge (subtle)
         ctx.save();
         ctx.globalAlpha = 0.15;
         roundRect(ctx, left, y + h * 0.7, w, h * 0.3, radius);
@@ -839,25 +774,19 @@
         ctx.fill();
         ctx.restore();
         
-        // CALVEY INC. text
         if (w > 60) {
             ctx.save();
             const fontSize = Math.min(9, w * 0.045);
             ctx.font = `600 ${fontSize}px 'IBM Plex Mono', monospace`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
-            // Text shadow
             ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
             ctx.fillText('CALVEY INC.', x + 1, y + h / 2 + 1);
-            
-            // Main text
             ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
             ctx.fillText('CALVEY INC.', x, y + h / 2);
             ctx.restore();
         }
         
-        // Glow effect for moving block
         if (isMoving) {
             ctx.save();
             ctx.shadowColor = GRADIENTS[colorIndex % GRADIENTS.length][0];
@@ -870,60 +799,78 @@
         }
     }
 
-    // Draw mini tower for game over screen
-    function drawTowerGraphic(score) {
-        const tCanvas = towerCanvas;
-        const tCtx = towerCtx;
-        const tWidth = 200;
-        const tHeight = 120;
+    // Draw tower graphic that reflects score vs high score
+    function drawTowerGraphic(score, highScore) {
+        const tCanvas = document.getElementById('towerCanvas');
+        const tCtx = tCanvas.getContext('2d');
+        const tWidth = 180;
+        const tHeight = 140;
         
-        // Set canvas size with DPR
         const tdpr = window.devicePixelRatio || 1;
         tCanvas.width = tWidth * tdpr;
         tCanvas.height = tHeight * tdpr;
         tCanvas.style.width = tWidth + 'px';
         tCanvas.style.height = tHeight + 'px';
+        tCtx.setTransform(1, 0, 0, 1, 0, 0);
         tCtx.scale(tdpr, tdpr);
         
         tCtx.clearRect(0, 0, tWidth, tHeight);
         
-        // Calculate how many blocks to show (max 8 for visual)
-        const blocksToShow = Math.min(Math.max(score, 1), 8);
-        const blockHeight = 12;
+        // Calculate blocks to show based on actual score
+        // Show exact score as blocks (capped at 10 for display)
+        const blocksToShow = Math.min(Math.max(score, 0), 10);
+        
+        if (blocksToShow === 0) {
+            // No blocks - show encouraging message
+            tCtx.font = "500 12px 'IBM Plex Mono', monospace";
+            tCtx.textAlign = 'center';
+            tCtx.fillStyle = '#5a5a6e';
+            tCtx.fillText('Keep trying!', tWidth / 2, tHeight / 2);
+            return;
+        }
+        
+        const blockHeight = 11;
         const gap = 2;
-        const maxBlockWidth = 100;
-        const minBlockWidth = 40;
+        const maxBlockWidth = 90;
+        const minBlockWidth = 35;
+        const tcenterX = tWidth / 2;
         
-        // Starting position
-        const startY = tHeight - 10;
-        const centerX = tWidth / 2;
+        // Calculate tower height
+        const towerHeight = blocksToShow * (blockHeight + gap);
+        const startY = tHeight - 15;
         
+        // Draw ground line
+        tCtx.strokeStyle = '#3a3a4e';
+        tCtx.lineWidth = 1;
+        tCtx.beginPath();
+        tCtx.moveTo(20, startY + 5);
+        tCtx.lineTo(tWidth - 20, startY + 5);
+        tCtx.stroke();
+        
+        // Draw each block
         for (let i = 0; i < blocksToShow; i++) {
-            // Calculate width (gets smaller as we go up, like real game)
-            const widthRatio = 1 - (i * 0.06);
+            const widthRatio = 1 - (i * 0.04);
             const blockWidth = Math.max(maxBlockWidth * widthRatio, minBlockWidth);
             
             const y = startY - (i * (blockHeight + gap)) - blockHeight;
-            const x = centerX - blockWidth / 2;
+            const x = tcenterX - blockWidth / 2;
             
-            // Get gradient colors
             const colors = GRADIENTS[i % GRADIENTS.length];
             const gradient = tCtx.createLinearGradient(x, y, x + blockWidth, y + blockHeight);
             gradient.addColorStop(0, colors[0]);
             gradient.addColorStop(1, colors[1]);
             
-            // Draw shadow
+            // Shadow
             tCtx.save();
-            tCtx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-            tCtx.shadowBlur = 8;
+            tCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+            tCtx.shadowBlur = 6;
             tCtx.shadowOffsetY = 3;
-            
             roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
             tCtx.fillStyle = gradient;
             tCtx.fill();
             tCtx.restore();
             
-            // Main block
+            // Block
             roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
             tCtx.fillStyle = gradient;
             tCtx.fill();
@@ -937,40 +884,87 @@
             tCtx.restore();
         }
         
-        // Draw score number above tower with glow
-        if (score > 0) {
-            const topBlockY = startY - (blocksToShow * (blockHeight + gap)) - 15;
+        // Draw comparison indicator if there's a high score to compare
+        if (highScore > 0 && score > 0) {
+            const percentage = Math.min((score / highScore) * 100, 100);
             
-            tCtx.save();
-            tCtx.font = "bold 24px 'Bebas Neue', sans-serif";
-            tCtx.textAlign = 'center';
-            tCtx.textBaseline = 'middle';
+            // Progress bar at bottom
+            const barWidth = 100;
+            const barHeight = 4;
+            const barX = (tWidth - barWidth) / 2;
+            const barY = tHeight - 8;
             
-            // Glow
-            tCtx.shadowColor = GRADIENTS[score % GRADIENTS.length][0];
-            tCtx.shadowBlur = 15;
-            tCtx.fillStyle = '#ffffff';
-            tCtx.fillText(score, centerX, topBlockY);
-            tCtx.restore();
+            // Background
+            tCtx.fillStyle = '#2a2a3e';
+            roundRect(tCtx, barX, barY, barWidth, barHeight, 2);
+            tCtx.fill();
+            
+            // Fill based on percentage of high score
+            if (percentage > 0) {
+                const fillWidth = (barWidth * percentage) / 100;
+                const fillGradient = tCtx.createLinearGradient(barX, barY, barX + fillWidth, barY);
+                
+                if (percentage >= 100) {
+                    fillGradient.addColorStop(0, '#ffd93d');
+                    fillGradient.addColorStop(1, '#ffed4a');
+                } else if (percentage >= 75) {
+                    fillGradient.addColorStop(0, '#43e97b');
+                    fillGradient.addColorStop(1, '#38f9d7');
+                } else if (percentage >= 50) {
+                    fillGradient.addColorStop(0, '#4facfe');
+                    fillGradient.addColorStop(1, '#00f2fe');
+                } else {
+                    fillGradient.addColorStop(0, '#667eea');
+                    fillGradient.addColorStop(1, '#764ba2');
+                }
+                
+                roundRect(tCtx, barX, barY, fillWidth, barHeight, 2);
+                tCtx.fillStyle = fillGradient;
+                tCtx.fill();
+            }
         }
         
-        // Add sparkles for high scores
-        if (score >= 10) {
-            const sparkleCount = Math.min(Math.floor(score / 5), 8);
+        // Sparkles for good scores
+        if (score >= 5) {
+            const sparkleCount = Math.min(Math.floor(score / 3), 6);
             for (let i = 0; i < sparkleCount; i++) {
-                const sx = 20 + Math.random() * (tWidth - 40);
-                const sy = 10 + Math.random() * 60;
-                const size = 2 + Math.random() * 3;
+                const sx = 25 + Math.random() * (tWidth - 50);
+                const sy = 15 + Math.random() * 40;
+                const size = 1.5 + Math.random() * 2;
                 
                 tCtx.save();
                 tCtx.fillStyle = '#ffd93d';
                 tCtx.shadowColor = '#ffd93d';
-                tCtx.shadowBlur = 10;
+                tCtx.shadowBlur = 8;
                 tCtx.beginPath();
                 tCtx.arc(sx, sy, size, 0, Math.PI * 2);
                 tCtx.fill();
                 tCtx.restore();
             }
+        }
+        
+        // Crown for matching or beating high score
+        if (score >= highScore && score > 0) {
+            const crownY = startY - towerHeight - 20;
+            tCtx.save();
+            tCtx.fillStyle = '#ffd93d';
+            tCtx.shadowColor = '#ffd93d';
+            tCtx.shadowBlur = 10;
+            
+            // Simple crown shape
+            tCtx.beginPath();
+            tCtx.moveTo(tcenterX - 12, crownY + 10);
+            tCtx.lineTo(tcenterX - 12, crownY + 4);
+            tCtx.lineTo(tcenterX - 8, crownY + 7);
+            tCtx.lineTo(tcenterX - 4, crownY);
+            tCtx.lineTo(tcenterX, crownY + 5);
+            tCtx.lineTo(tcenterX + 4, crownY);
+            tCtx.lineTo(tcenterX + 8, crownY + 7);
+            tCtx.lineTo(tcenterX + 12, crownY + 4);
+            tCtx.lineTo(tcenterX + 12, crownY + 10);
+            tCtx.closePath();
+            tCtx.fill();
+            tCtx.restore();
         }
     }
 
@@ -1117,21 +1111,18 @@
     function render() {
         ctx.clearRect(0, 0, width, height);
         
-        // Draw stack
         state.stack.forEach((block, i) => {
             const screenY = block.y + state.cameraY;
             if (screenY > height + CONFIG.BLOCK_HEIGHT || screenY < -CONFIG.BLOCK_HEIGHT * 2) return;
             drawBlock(block.x, screenY, block.width, block.height, i);
         });
         
-        // Draw current block
         if (state.current && !state.current.placed) {
             const block = state.current;
             const screenY = block.y + state.cameraY;
             drawBlock(block.x, screenY, block.width, block.height, state.stack.length, true);
         }
         
-        // Draw falling pieces
         state.falling.forEach(piece => {
             ctx.save();
             const screenY = piece.y + state.cameraY;
@@ -1220,6 +1211,10 @@
         state.playing = false;
         state.current = null;
         
+        // Increment games played
+        state.gamesPlayed++;
+        localStorage.setItem('calveyStackGamesPlayed', state.gamesPlayed.toString());
+        
         playSound('fail');
         
         const isNewRecord = state.score > state.highScore;
@@ -1228,10 +1223,9 @@
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
         
-        // Draw tower graphic
-        drawTowerGraphic(state.score);
+        // Draw tower graphic showing actual score
+        drawTowerGraphic(state.score, state.highScore);
         
-        // Set quote
         const quote = getRandomQuote();
         document.getElementById('quoteText').textContent = `"${quote.text}"`;
         document.getElementById('quoteAuthor').textContent = `— ${quote.author}`;
