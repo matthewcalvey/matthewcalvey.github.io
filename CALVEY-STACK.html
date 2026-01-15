@@ -285,11 +285,8 @@
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.4s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
         overflow-y: auto;
-        padding: 20px 0;
+        -webkit-overflow-scrolling: touch;
     }
 
     #gameOverScreen.visible {
@@ -298,13 +295,15 @@
     }
 
     .game-over-wrapper {
+        min-height: 100%;
         width: 100%;
-        max-width: 340px;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 10px 20px;
+        padding: 40px 20px;
+        padding-top: calc(env(safe-area-inset-top, 20px) + 30px);
+        padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 30px);
     }
 
     .tower-graphic {
@@ -314,6 +313,7 @@
         display: flex;
         align-items: flex-end;
         justify-content: center;
+        flex-shrink: 0;
     }
 
     #towerCanvas {
@@ -377,110 +377,11 @@
         50% { box-shadow: 0 0 20px 5px rgba(255, 217, 61, 0.2); }
     }
 
-    /* Leaderboard Section */
-    .leaderboard-section {
-        width: 100%;
-        margin-bottom: 16px;
-    }
-
-    .leaderboard-header {
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 0.3em;
-        color: var(--text-dim);
-        text-transform: uppercase;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .leaderboard-status {
-        font-size: 8px;
-        color: var(--text-dim);
-        opacity: 0.7;
-    }
-
-    .leaderboard-status.loading {
-        color: var(--perfect);
-    }
-
-    .leaderboard {
-        width: 100%;
-        background: var(--bg-card);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-
-    .leaderboard-entry {
-        display: flex;
-        align-items: center;
-        padding: 10px 14px;
-        border-bottom: 1px solid var(--border);
-        transition: background 0.2s;
-    }
-
-    .leaderboard-entry:last-child {
-        border-bottom: none;
-    }
-
-    .leaderboard-entry.current-player {
-        background: rgba(255, 217, 61, 0.1);
-    }
-
-    .leaderboard-entry.top-3:nth-child(1) .entry-rank {
-        color: #ffd93d;
-        text-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
-    }
-
-    .leaderboard-entry.top-3:nth-child(2) .entry-rank {
-        color: #c0c0c0;
-    }
-
-    .leaderboard-entry.top-3:nth-child(3) .entry-rank {
-        color: #cd7f32;
-    }
-
-    .entry-rank {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 18px;
-        color: var(--text-dim);
-        width: 28px;
-        text-align: center;
-    }
-
-    .entry-name {
-        flex: 1;
-        font-size: 12px;
-        font-weight: 500;
-        color: var(--text);
-        text-align: left;
-        margin-left: 8px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .entry-score {
-        font-family: 'Bebas Neue', sans-serif;
-        font-size: 20px;
-        color: var(--text);
-        margin-left: 10px;
-    }
-
-    .leaderboard-loading {
-        padding: 20px;
-        text-align: center;
-        color: var(--text-dim);
-        font-size: 11px;
-    }
-
     /* Username Section */
     .username-section {
         width: 100%;
-        margin-bottom: 16px;
+        max-width: 300px;
+        margin-bottom: 20px;
     }
 
     .username-prompt {
@@ -572,13 +473,13 @@
     .quote-section {
         width: 100%;
         max-width: 300px;
-        margin-bottom: 20px;
+        margin-bottom: 24px;
     }
 
     .quote-text {
         font-family: 'Playfair Display', serif;
         font-style: italic;
-        font-size: 13px;
+        font-size: 14px;
         line-height: 1.6;
         color: var(--text-quote);
         margin-bottom: 8px;
@@ -592,6 +493,111 @@
         text-transform: uppercase;
     }
 
+    /* Leaderboard Section - NOW BELOW QUOTE */
+    .leaderboard-section {
+        width: 100%;
+        max-width: 300px;
+        margin-bottom: 24px;
+    }
+
+    .leaderboard-header {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .leaderboard-status {
+        font-size: 8px;
+        color: var(--text-dim);
+        opacity: 0.7;
+    }
+
+    .leaderboard-status.live {
+        color: #43e97b;
+    }
+
+    .leaderboard-status.loading {
+        color: var(--perfect);
+    }
+
+    .leaderboard {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .leaderboard-entry {
+        display: flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+    }
+
+    .leaderboard-entry:last-child {
+        border-bottom: none;
+    }
+
+    .leaderboard-entry.current-player {
+        background: rgba(255, 217, 61, 0.1);
+    }
+
+    .leaderboard-entry:nth-child(1) .entry-rank {
+        color: #ffd93d;
+        text-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
+    }
+
+    .leaderboard-entry:nth-child(2) .entry-rank {
+        color: #c0c0c0;
+    }
+
+    .leaderboard-entry:nth-child(3) .entry-rank {
+        color: #cd7f32;
+    }
+
+    .entry-rank {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px;
+        color: var(--text-dim);
+        width: 28px;
+        text-align: center;
+    }
+
+    .entry-name {
+        flex: 1;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        text-align: left;
+        margin-left: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .entry-score {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 20px;
+        color: var(--text);
+        margin-left: 10px;
+    }
+
+    .leaderboard-loading {
+        padding: 20px;
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 11px;
+    }
+
     .tap-restart {
         font-size: 12px;
         font-weight: 500;
@@ -599,6 +605,8 @@
         color: var(--text);
         text-transform: uppercase;
         animation: pulse 2s ease-in-out infinite;
+        margin-top: auto;
+        padding-top: 10px;
     }
 
     #soundToggle {
@@ -673,7 +681,7 @@
         <p class="tap-start">Tap to Play</p>
     </div>
 
-    <!-- Game over screen -->
+    <!-- Game over screen - REORDERED: Quote first, then Leaderboard -->
     <div id="gameOverScreen">
         <div class="game-over-wrapper">
             <div class="tower-graphic">
@@ -704,7 +712,13 @@
                 </div>
             </div>
 
-            <!-- Leaderboard -->
+            <!-- Inspirational Quote - NOW FIRST -->
+            <div class="quote-section">
+                <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
+                <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
+            </div>
+            
+            <!-- Global Leaderboard - NOW BELOW QUOTE -->
             <div class="leaderboard-section">
                 <div class="leaderboard-header">
                     🏆 Global Leaderboard
@@ -713,11 +727,6 @@
                 <div class="leaderboard" id="leaderboard">
                     <div class="leaderboard-loading">Loading scores...</div>
                 </div>
-            </div>
-            
-            <div class="quote-section">
-                <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
-                <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
             </div>
             
             <p class="tap-restart">Tap to Retry</p>
@@ -841,16 +850,18 @@
         leaderboard: []
     };
 
-    // Generate unique visitor ID
+    // Generate unique visitor ID for this device
     function generateVisitorId() {
-        const id = 'visitor_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+        const id = 'player_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now().toString(36);
         localStorage.setItem('calveyStackVisitorId', id);
         return id;
     }
 
     // ============================================================
-    // SHARED STORAGE API (Global Leaderboard)
+    // SHARED STORAGE API (Global Leaderboard - Visible to ALL devices)
     // ============================================================
+    
+    const LEADERBOARD_KEY = 'calvey-stack-global-leaderboard-v1';
     
     async function loadGlobalLeaderboard() {
         const statusEl = document.getElementById('leaderboardStatus');
@@ -858,53 +869,61 @@
         statusEl.className = 'leaderboard-status loading';
         
         try {
-            // Try to load from shared storage
+            // Use shared storage (shared: true) - visible to ALL users on ALL devices
             if (window.storage) {
-                const result = await window.storage.get('calvey-stack-leaderboard', true);
+                const result = await window.storage.get(LEADERBOARD_KEY, true);
                 if (result && result.value) {
                     state.leaderboard = JSON.parse(result.value);
                     statusEl.textContent = '(live)';
-                    statusEl.className = 'leaderboard-status';
+                    statusEl.className = 'leaderboard-status live';
                     renderLeaderboard();
                     return;
                 }
             }
         } catch (e) {
-            console.log('Shared storage not available, using local fallback');
+            console.log('Loading from shared storage failed:', e);
         }
         
-        // Fallback to localStorage
-        state.leaderboard = JSON.parse(localStorage.getItem('calveyStackLeaderboard') || '[]');
-        statusEl.textContent = '(local)';
-        statusEl.className = 'leaderboard-status';
+        // If no shared data exists yet, start with empty leaderboard
+        state.leaderboard = [];
+        statusEl.textContent = '(live)';
+        statusEl.className = 'leaderboard-status live';
         renderLeaderboard();
     }
 
     async function saveGlobalLeaderboard() {
         try {
-            // Save to shared storage (visible to all users)
+            // Save to shared storage with shared: true
+            // This makes it visible to ALL users across ALL devices
             if (window.storage) {
-                await window.storage.set('calvey-stack-leaderboard', JSON.stringify(state.leaderboard), true);
+                await window.storage.set(LEADERBOARD_KEY, JSON.stringify(state.leaderboard), true);
+                console.log('Leaderboard saved to shared storage');
             }
         } catch (e) {
-            console.log('Could not save to shared storage');
+            console.log('Could not save to shared storage:', e);
         }
-        
-        // Always save local backup
-        localStorage.setItem('calveyStackLeaderboard', JSON.stringify(state.leaderboard));
     }
 
     async function updateLeaderboard(score) {
         if (!state.username || score === 0) return;
         
-        // Reload latest leaderboard first
-        await loadGlobalLeaderboard();
+        // Reload latest leaderboard first to get most recent data
+        try {
+            if (window.storage) {
+                const result = await window.storage.get(LEADERBOARD_KEY, true);
+                if (result && result.value) {
+                    state.leaderboard = JSON.parse(result.value);
+                }
+            }
+        } catch (e) {
+            console.log('Could not refresh leaderboard');
+        }
         
-        // Check if user already exists (by visitorId to prevent duplicates)
-        const existingIndex = state.leaderboard.findIndex(entry => entry.odtId === state.visitorId);
+        // Check if this player already exists (by visitorId)
+        const existingIndex = state.leaderboard.findIndex(entry => entry.id === state.visitorId);
         
         if (existingIndex !== -1) {
-            // Update if new score is higher
+            // Update only if new score is higher
             if (score > state.leaderboard[existingIndex].score) {
                 state.leaderboard[existingIndex].score = score;
                 state.leaderboard[existingIndex].name = state.username;
@@ -926,7 +945,7 @@
         // Keep only top entries
         state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
         
-        // Save to shared storage
+        // Save to shared storage (visible to all devices)
         await saveGlobalLeaderboard();
         
         // Re-render
@@ -1058,10 +1077,9 @@
         
         state.leaderboard.forEach((entry, index) => {
             const isCurrentPlayer = entry.id === state.visitorId;
-            const isTop3 = index < 3;
             
             const entryEl = document.createElement('div');
-            entryEl.className = `leaderboard-entry ${isCurrentPlayer ? 'current-player' : ''} ${isTop3 ? 'top-3' : ''}`;
+            entryEl.className = `leaderboard-entry ${isCurrentPlayer ? 'current-player' : ''}`;
             
             entryEl.innerHTML = `
                 <span class="entry-rank">${index + 1}</span>
@@ -1569,7 +1587,7 @@
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
         
-        // Update global leaderboard
+        // Update global leaderboard (shared across all devices)
         await updateLeaderboard(state.score);
         
         // Draw tower graphic
@@ -1617,12 +1635,12 @@
 
     document.getElementById('gameOverScreen').addEventListener('click', (e) => {
         if (e.target.closest('.username-section')) return;
-        if (e.target.closest('.leaderboard')) return;
+        if (e.target.closest('.leaderboard-section')) return;
         startGame();
     });
     document.getElementById('gameOverScreen').addEventListener('touchend', (e) => {
         if (e.target.closest('.username-section')) return;
-        if (e.target.closest('.leaderboard')) return;
+        if (e.target.closest('.leaderboard-section')) return;
         e.preventDefault();
         startGame();
     });
@@ -1668,7 +1686,7 @@
     });
 
     document.addEventListener('touchmove', (e) => {
-        if (!e.target.closest('.username-input')) {
+        if (!e.target.closest('.username-input') && !e.target.closest('#gameOverScreen')) {
             e.preventDefault();
         }
     }, { passive: false });
@@ -1679,7 +1697,7 @@
     
     document.getElementById('highScoreValue').textContent = state.highScore;
     updateUsernameDisplay();
-    loadGlobalLeaderboard();
+    loadGlobalLeaderboard(); // Load shared leaderboard on startup
     gameLoop();
 </script>
 ```
