@@ -54,6 +54,7 @@
     speedRamp: 12,   // per placed block
     camLerp: 0.10,
     floorPad: 90,    // safe bottom for home indicator
+    margin: 10
   };
 
   // ---------- State ----------
@@ -64,14 +65,13 @@
     best: Number(localStorage.getItem("stackshot_best") || 0),
     shake: 0,
     t: 0,
-    // camera
     camY: 0,
-    // current moving block
     mover: null,
     dir: 1
   };
 
   let stack = [];
+  let fallers = [];
 
   function reset(runStarts=false) {
     S.started = runStarts;
@@ -79,8 +79,9 @@
     S.score = 0;
     S.shake = 0;
     S.t = 0;
-    S.dir = 1;
+    S.dir = Math.random() < 0.5 ? -1 : 1;
     stack = [];
+    fallers = [];
 
     // Base block centered
     const baseY = H - BASE.floorPad - BASE.blockH;
@@ -94,23 +95,27 @@
     stack.push(base);
 
     S.camY = 0;
-
-    spawnMover();
+    spawnMover(true);
   }
 
-  function spawnMover() {
+  function spawnMover(isFirst=false) {
     const top = stack[stack.length - 1];
     const nextY = top.y - BASE.blockH;
-
-    // Start from left offscreen
     const w = top.w;
+
+    // FIX #1: spawn centered ABOVE the stack (always overlap available)
+    const centeredX = (W - w) / 2;
+
     S.mover = {
-      x: -w,
+      x: centeredX,
       y: nextY,
       w,
       h: BASE.blockH,
       v: BASE.speed0 + S.score * BASE.speedRamp,
-      hue: (top.hue + 28) % 360
+      hue: (top.hue + 28) % 360,
+      // FIX #2: "arm" the mover after at least one update tick
+      armed: false,
+      armDelay: isFirst ? 0.06 : 0.02  // seconds
     };
   }
 
@@ -120,6 +125,9 @@
 
     if (!S.started) { reset(true); return; }
     if (S.dead) { reset(true); return; }
+
+    // If mover isn't armed yet, ignore this tap (prevents immediate game-over)
+    if (!S.mover || !S.mover.armed) return;
 
     placeBlock();
   }
@@ -137,21 +145,20 @@
     const m = S.mover;
     const top = stack[stack.length - 1];
 
-    // Overlap interval in x
     const left = Math.max(m.x, top.x);
     const right = Math.min(m.x + m.w, top.x + top.w);
     const overlap = right - left;
 
+    // With the fixes above, overlap should almost never be <= 0,
+    // but keep it as a true miss condition.
     if (overlap <= 0) {
       die();
       return;
     }
 
-    // Perfect bonus: nearly aligned
     const misalign = Math.abs((m.x + m.w/2) - (top.x + top.w/2));
     const perfect = misalign < 6;
 
-    // Create placed block trimmed to overlap
     const placed = {
       x: left,
       y: m.y,
@@ -159,11 +166,19 @@
       h: m.h,
       hue: m.hue
     };
+
+    // Perfect: snap and keep full width for satisfaction
+    if (perfect) {
+      placed.x = top.x;
+      placed.w = top.w;
+      S.shake = Math.max(S.shake, 6);
+    }
+
     stack.push(placed);
 
-    // Falling offcut (visual feedback)
+    // Falling offcut
     const offW = m.w - overlap;
-    if (offW > 0) {
+    if (offW > 0 && !perfect) {
       const offLeft = (m.x < top.x);
       spawnFaller({
         x: offLeft ? m.x : right,
@@ -173,12 +188,6 @@
         hue: m.hue,
         vx: offLeft ? -120 : 120
       });
-    } else if (perfect) {
-      // Small “juice” on perfect
-      S.shake = Math.max(S.shake, 6);
-      // Keep width (no trim), but snap to top for satisfaction
-      placed.x = top.x;
-      placed.w = top.w;
     }
 
     S.score++;
@@ -187,13 +196,12 @@
       localStorage.setItem("stackshot_best", String(S.best));
     }
 
-    // Too small -> end soon (forces tension)
     if (placed.w < BASE.minW) {
       die();
       return;
     }
 
-    spawnMover();
+    spawnMover(false);
   }
 
   function die() {
@@ -202,7 +210,6 @@
   }
 
   // ---------- Falling pieces ----------
-  let fallers = [];
   function spawnFaller(f) {
     fallers.push({
       ...f,
@@ -234,12 +241,17 @@
     const targetCam = Math.max(0, (H * 0.58) - top.y);
     S.camY = lerp(S.camY, targetCam, BASE.camLerp);
 
+    // Arm the mover after a small delay
+    if (S.mover && !S.mover.armed) {
+      S.mover.armDelay -= dt;
+      if (S.mover.armDelay <= 0) S.mover.armed = true;
+    }
+
     if (!S.dead && S.mover) {
       const m = S.mover;
       m.x += S.dir * m.v * dt;
 
-      // Bounce between margins
-      const margin = 10;
+      const margin = BASE.margin;
       if (m.x + m.w > W - margin) { m.x = W - margin - m.w; S.dir = -1; }
       if (m.x < margin) { m.x = margin; S.dir = 1; }
     }
@@ -265,7 +277,6 @@
     ctx.save();
     ctx.translate(sx, sy);
 
-    // Background gradient
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#070a10");
     bg.addColorStop(1, "#0c1630");
@@ -297,28 +308,31 @@
     ctx.fillRect(0, floorY - 90, W, 220);
 
     // Stack blocks
-    for (const b of stack) {
-      drawBlock(b.x, b.y, b.w, b.h, b.hue, 0.95);
-    }
+    for (const b of stack) drawBlock(b.x, b.y, b.w, b.h, b.hue, 0.95);
 
     // Falling offcuts
-    ctx.globalAlpha = 0.9;
-    for (const f of fallers) {
-      drawBlock(f.x, f.y, f.w, f.h, f.hue, 0.7);
-    }
-    ctx.globalAlpha = 1;
+    for (const f of fallers) drawBlock(f.x, f.y, f.w, f.h, f.hue, 0.75);
 
     // Mover
     if (S.mover) {
       const m = S.mover;
       drawBlock(m.x, m.y, m.w, m.h, m.hue, S.dead ? 0.4 : 1.0);
 
-      // Shadow hint on top block (makes timing easier)
+      // Shadow hint
       const top = stack[stack.length - 1];
-      ctx.globalAlpha = 0.2;
+      ctx.globalAlpha = 0.18;
       ctx.fillStyle = "#000";
       ctx.fillRect(m.x, top.y + top.h + 8, m.w, 6);
       ctx.globalAlpha = 1;
+
+      // “Tap ready” hint while arming
+      if (!S.dead && !m.armed) {
+        ctx.globalAlpha = 0.7;
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        ctx.font = "600 13px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+        ctx.fillText("Ready...", 16, top.y - 32);
+        ctx.globalAlpha = 1;
+      }
     }
 
     ctx.restore(); // end camera
@@ -332,31 +346,26 @@
     ctx.fillStyle = "rgba(255,255,255,0.75)";
     ctx.fillText(`Best: ${S.best}`, 16, 38);
 
-    // Overlay
     if (!S.started) {
-      overlay("STACKSHOT", "Tap to drop blocks.", "Land it. Overhang gets cut. Miss = game over.");
+      overlay("STACKSHOT", "Tap to start. Then tap to drop blocks.", "Land it. Overhang gets cut. Miss = game over.");
     } else if (S.dead) {
       overlay("GAME OVER", "Tap to restart.", S.score === S.best ? "New best." : `Best: ${S.best}`);
     }
 
     ctx.restore();
 
-    // Bottom fade for safe area
     safeBottomFade();
   }
 
   function drawBlock(x, y, w, h, hue, alpha) {
-    // Main body
     ctx.globalAlpha = alpha;
     ctx.fillStyle = `hsla(${hue}, 90%, 58%, 0.95)`;
     roundRect(x, y, w, h, 10);
 
-    // Highlight strip
     ctx.globalAlpha = alpha * 0.22;
     ctx.fillStyle = "#fff";
     roundRect(x + 6, y + 6, Math.max(6, w - 12), Math.max(6, h * 0.28), 8);
 
-    // Subtle glow
     ctx.globalAlpha = alpha * 0.22;
     ctx.globalCompositeOperation = "lighter";
     const gx = x + w / 2;
