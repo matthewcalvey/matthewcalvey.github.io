@@ -12,10 +12,12 @@
         :root {
             --bg: #0f0f13;
             --bg-lighter: #1a1a22;
+            --bg-card: #1e1e28;
             --perfect: #ffd93d;
             --text: #ffffff;
             --text-dim: #5a5a6e;
             --text-quote: #9a9ab0;
+            --border: #2a2a3e;
         }
 
 ```
@@ -271,7 +273,7 @@
         text-transform: uppercase;
     }
 
-    /* GAME OVER SCREEN - PROPERLY CENTERED */
+    /* GAME OVER SCREEN */
     #gameOverScreen {
         position: absolute;
         top: 0;
@@ -286,6 +288,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        overflow-y: auto;
+        padding: 20px 0;
     }
 
     #gameOverScreen.visible {
@@ -300,21 +304,21 @@
         flex-direction: column;
         align-items: center;
         text-align: center;
-        padding: 20px;
+        padding: 10px 20px;
     }
 
     .tower-graphic {
-        width: 180px;
-        height: 140px;
-        margin-bottom: 16px;
+        width: 160px;
+        height: 120px;
+        margin-bottom: 12px;
         display: flex;
         align-items: flex-end;
         justify-content: center;
     }
 
     #towerCanvas {
-        width: 180px;
-        height: 140px;
+        width: 160px;
+        height: 120px;
     }
 
     .game-over-label {
@@ -328,7 +332,7 @@
 
     .final-score {
         font-family: 'Bebas Neue', sans-serif;
-        font-size: 90px;
+        font-size: 72px;
         color: var(--text);
         line-height: 1;
         margin-bottom: 4px;
@@ -336,11 +340,11 @@
     }
 
     .score-stats {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 500;
         color: var(--text-dim);
         line-height: 1.8;
-        margin-bottom: 16px;
+        margin-bottom: 12px;
         letter-spacing: 0.05em;
     }
 
@@ -349,14 +353,14 @@
     }
 
     .new-record {
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 600;
         letter-spacing: 0.25em;
         color: var(--perfect);
         border: 2px solid var(--perfect);
-        padding: 10px 24px;
+        padding: 8px 20px;
         border-radius: 6px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
         opacity: 0;
         visibility: hidden;
         text-shadow: 0 0 20px var(--perfect);
@@ -373,19 +377,190 @@
         50% { box-shadow: 0 0 20px 5px rgba(255, 217, 61, 0.2); }
     }
 
+    /* Leaderboard Section */
+    .leaderboard-section {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .leaderboard-header {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.3em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .leaderboard {
+        width: 100%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .leaderboard-entry {
+        display: flex;
+        align-items: center;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.2s;
+    }
+
+    .leaderboard-entry:last-child {
+        border-bottom: none;
+    }
+
+    .leaderboard-entry.current-player {
+        background: rgba(255, 217, 61, 0.1);
+    }
+
+    .leaderboard-entry.top-3:nth-child(1) .entry-rank {
+        color: #ffd93d;
+        text-shadow: 0 0 10px rgba(255, 217, 61, 0.5);
+    }
+
+    .leaderboard-entry.top-3:nth-child(2) .entry-rank {
+        color: #c0c0c0;
+    }
+
+    .leaderboard-entry.top-3:nth-child(3) .entry-rank {
+        color: #cd7f32;
+    }
+
+    .entry-rank {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 18px;
+        color: var(--text-dim);
+        width: 28px;
+        text-align: center;
+    }
+
+    .entry-name {
+        flex: 1;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+        text-align: left;
+        margin-left: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .entry-score {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 20px;
+        color: var(--text);
+        margin-left: 10px;
+    }
+
+    /* Username Input */
+    .username-section {
+        width: 100%;
+        margin-bottom: 16px;
+    }
+
+    .username-prompt {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.2em;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .username-input-wrapper {
+        display: flex;
+        gap: 8px;
+    }
+
+    .username-input {
+        flex: 1;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 10px 14px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .username-input:focus {
+        border-color: var(--perfect);
+    }
+
+    .username-input::placeholder {
+        color: var(--text-dim);
+    }
+
+    .username-save-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .username-save-btn:active {
+        transform: scale(0.95);
+    }
+
+    .username-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .current-username {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text);
+    }
+
+    .change-name-btn {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .change-name-btn:active {
+        border-color: var(--text-dim);
+        color: var(--text);
+    }
+
+    /* Quote Section */
     .quote-section {
         width: 100%;
         max-width: 300px;
-        margin-bottom: 24px;
+        margin-bottom: 20px;
     }
 
     .quote-text {
         font-family: 'Playfair Display', serif;
         font-style: italic;
-        font-size: 14px;
+        font-size: 13px;
         line-height: 1.6;
         color: var(--text-quote);
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
 
     .quote-author {
@@ -435,6 +610,11 @@
         color: var(--text-dim);
         border-color: rgba(90, 90, 110, 0.5);
     }
+
+    /* Hide on game screen */
+    .hidden {
+        display: none !important;
+    }
 </style>
 ```
 
@@ -473,7 +653,7 @@
         <p class="tap-start">Tap to Play</p>
     </div>
 
-    <!-- Game over screen - FIXED STRUCTURE -->
+    <!-- Game over screen -->
     <div id="gameOverScreen">
         <div class="game-over-wrapper">
             <div class="tower-graphic">
@@ -486,6 +666,31 @@
                 Perfects: <span id="perfectCount">0</span> · Best Combo: <span id="bestCombo">0</span>
             </div>
             <div class="new-record" id="newRecordBadge">★ NEW RECORD ★</div>
+            
+            <!-- Username Section -->
+            <div class="username-section" id="usernameSection">
+                <div id="usernameInputArea">
+                    <div class="username-prompt">Enter your name for the leaderboard</div>
+                    <div class="username-input-wrapper">
+                        <input type="text" class="username-input" id="usernameInput" placeholder="Your name" maxlength="12" autocomplete="off">
+                        <button class="username-save-btn" id="saveUsernameBtn">SAVE</button>
+                    </div>
+                </div>
+                <div id="usernameDisplayArea" class="hidden">
+                    <div class="username-display">
+                        <span class="current-username">Playing as: <strong id="currentUsername"></strong></span>
+                        <button class="change-name-btn" id="changeNameBtn">CHANGE</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="leaderboard-section">
+                <div class="leaderboard-header">🏆 Leaderboard</div>
+                <div class="leaderboard" id="leaderboard">
+                    <!-- Entries will be populated by JS -->
+                </div>
+            </div>
             
             <div class="quote-section">
                 <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
@@ -514,10 +719,11 @@
         MAX_GROW: 12,
         CAMERA_LERP: 0.12,
         STACK_VISIBLE: 10,
-        BORDER_RADIUS: 10
+        BORDER_RADIUS: 10,
+        MAX_LEADERBOARD_ENTRIES: 5
     };
 
-    // Expanded encouraging quotes
+    // Quotes
     const QUOTES = [
         { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", author: "Winston Churchill" },
         { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
@@ -571,43 +777,20 @@
         { text: "Every accomplishment starts with the decision to try.", author: "John F. Kennedy" }
     ];
 
-    // Expanded gradient colors
+    // Gradient colors
     const GRADIENTS = [
-        ['#667eea', '#764ba2'],
-        ['#6a11cb', '#2575fc'],
-        ['#7f00ff', '#e100ff'],
-        ['#8e2de2', '#4a00e0'],
-        ['#b721ff', '#21d4fd'],
-        ['#f093fb', '#f5576c'],
-        ['#ff0844', '#ffb199'],
-        ['#fa709a', '#fee140'],
-        ['#ff758c', '#ff7eb3'],
-        ['#c471f5', '#fa71cd'],
-        ['#4facfe', '#00f2fe'],
-        ['#00c6fb', '#005bea'],
-        ['#48c6ef', '#6f86d6'],
-        ['#0acffe', '#495aff'],
-        ['#43e97b', '#38f9d7'],
-        ['#11998e', '#38ef7d'],
-        ['#00b09b', '#96c93d'],
-        ['#56ab2f', '#a8e063'],
-        ['#02aab0', '#00cdac'],
-        ['#f7971e', '#ffd200'],
-        ['#f2994a', '#f2c94c'],
-        ['#fc4a1a', '#f7b733'],
-        ['#f5af19', '#f12711'],
-        ['#fceabb', '#f8b500'],
-        ['#ff9a9e', '#fecfef'],
-        ['#ffecd2', '#fcb69f'],
-        ['#ff6b6b', '#feca57'],
-        ['#ee9ca7', '#ffdde1'],
-        ['#f857a6', '#ff5858'],
-        ['#a8edea', '#fed6e3'],
-        ['#d299c2', '#fef9d7'],
-        ['#89f7fe', '#66a6ff'],
-        ['#96fbc4', '#f9f586'],
-        ['#c2e9fb', '#a1c4fd'],
-        ['#1a2980', '#26d0ce']
+        ['#667eea', '#764ba2'], ['#6a11cb', '#2575fc'], ['#7f00ff', '#e100ff'],
+        ['#8e2de2', '#4a00e0'], ['#b721ff', '#21d4fd'], ['#f093fb', '#f5576c'],
+        ['#ff0844', '#ffb199'], ['#fa709a', '#fee140'], ['#ff758c', '#ff7eb3'],
+        ['#c471f5', '#fa71cd'], ['#4facfe', '#00f2fe'], ['#00c6fb', '#005bea'],
+        ['#48c6ef', '#6f86d6'], ['#0acffe', '#495aff'], ['#43e97b', '#38f9d7'],
+        ['#11998e', '#38ef7d'], ['#00b09b', '#96c93d'], ['#56ab2f', '#a8e063'],
+        ['#02aab0', '#00cdac'], ['#f7971e', '#ffd200'], ['#f2994a', '#f2c94c'],
+        ['#fc4a1a', '#f7b733'], ['#f5af19', '#f12711'], ['#fceabb', '#f8b500'],
+        ['#ff9a9e', '#fecfef'], ['#ffecd2', '#fcb69f'], ['#ff6b6b', '#feca57'],
+        ['#ee9ca7', '#ffdde1'], ['#f857a6', '#ff5858'], ['#a8edea', '#fed6e3'],
+        ['#d299c2', '#fef9d7'], ['#89f7fe', '#66a6ff'], ['#96fbc4', '#f9f586'],
+        ['#c2e9fb', '#a1c4fd'], ['#1a2980', '#26d0ce']
     ];
 
     // ============================================================
@@ -629,7 +812,9 @@
         direction: 1,
         speed: CONFIG.INITIAL_SPEED,
         soundEnabled: true,
-        gamesPlayed: parseInt(localStorage.getItem('calveyStackGamesPlayed') || '0')
+        gamesPlayed: parseInt(localStorage.getItem('calveyStackGamesPlayed') || '0'),
+        username: localStorage.getItem('calveyStackUsername') || '',
+        leaderboard: JSON.parse(localStorage.getItem('calveyStackLeaderboard') || '[]')
     };
 
     // ============================================================
@@ -716,6 +901,92 @@
     }
 
     // ============================================================
+    // LEADERBOARD
+    // ============================================================
+    
+    function saveUsername(name) {
+        state.username = name.trim().substring(0, 12);
+        localStorage.setItem('calveyStackUsername', state.username);
+        updateUsernameDisplay();
+    }
+
+    function updateUsernameDisplay() {
+        const inputArea = document.getElementById('usernameInputArea');
+        const displayArea = document.getElementById('usernameDisplayArea');
+        const currentUsername = document.getElementById('currentUsername');
+        
+        if (state.username) {
+            inputArea.classList.add('hidden');
+            displayArea.classList.remove('hidden');
+            currentUsername.textContent = state.username;
+        } else {
+            inputArea.classList.remove('hidden');
+            displayArea.classList.add('hidden');
+        }
+    }
+
+    function updateLeaderboard(score) {
+        if (!state.username || score === 0) return;
+        
+        // Check if user already exists
+        const existingIndex = state.leaderboard.findIndex(entry => entry.name === state.username);
+        
+        if (existingIndex !== -1) {
+            // Update if new score is higher
+            if (score > state.leaderboard[existingIndex].score) {
+                state.leaderboard[existingIndex].score = score;
+            }
+        } else {
+            // Add new entry
+            state.leaderboard.push({
+                name: state.username,
+                score: score
+            });
+        }
+        
+        // Sort by score descending
+        state.leaderboard.sort((a, b) => b.score - a.score);
+        
+        // Keep only top entries
+        state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+        
+        // Save to localStorage
+        localStorage.setItem('calveyStackLeaderboard', JSON.stringify(state.leaderboard));
+    }
+
+    function renderLeaderboard() {
+        const container = document.getElementById('leaderboard');
+        container.innerHTML = '';
+        
+        if (state.leaderboard.length === 0) {
+            container.innerHTML = `
+                <div class="leaderboard-entry">
+                    <span class="entry-name" style="text-align: center; color: var(--text-dim); width: 100%;">
+                        No scores yet. Be the first!
+                    </span>
+                </div>
+            `;
+            return;
+        }
+        
+        state.leaderboard.forEach((entry, index) => {
+            const isCurrentPlayer = entry.name === state.username;
+            const isTop3 = index < 3;
+            
+            const entryEl = document.createElement('div');
+            entryEl.className = `leaderboard-entry ${isCurrentPlayer ? 'current-player' : ''} ${isTop3 ? 'top-3' : ''}`;
+            
+            entryEl.innerHTML = `
+                <span class="entry-rank">${index + 1}</span>
+                <span class="entry-name">${entry.name}</span>
+                <span class="entry-score">${entry.score}</span>
+            `;
+            
+            container.appendChild(entryEl);
+        });
+    }
+
+    // ============================================================
     // DRAWING UTILITIES
     // ============================================================
     
@@ -799,12 +1070,11 @@
         }
     }
 
-    // Draw tower graphic that reflects score vs high score
     function drawTowerGraphic(score, highScore) {
         const tCanvas = document.getElementById('towerCanvas');
         const tCtx = tCanvas.getContext('2d');
-        const tWidth = 180;
-        const tHeight = 140;
+        const tWidth = 160;
+        const tHeight = 120;
         
         const tdpr = window.devicePixelRatio || 1;
         tCanvas.width = tWidth * tdpr;
@@ -816,30 +1086,25 @@
         
         tCtx.clearRect(0, 0, tWidth, tHeight);
         
-        // Calculate blocks to show based on actual score
-        // Show exact score as blocks (capped at 10 for display)
         const blocksToShow = Math.min(Math.max(score, 0), 10);
         
         if (blocksToShow === 0) {
-            // No blocks - show encouraging message
-            tCtx.font = "500 12px 'IBM Plex Mono', monospace";
+            tCtx.font = "500 11px 'IBM Plex Mono', monospace";
             tCtx.textAlign = 'center';
             tCtx.fillStyle = '#5a5a6e';
             tCtx.fillText('Keep trying!', tWidth / 2, tHeight / 2);
             return;
         }
         
-        const blockHeight = 11;
+        const blockHeight = 10;
         const gap = 2;
-        const maxBlockWidth = 90;
-        const minBlockWidth = 35;
+        const maxBlockWidth = 80;
+        const minBlockWidth = 30;
         const tcenterX = tWidth / 2;
         
-        // Calculate tower height
         const towerHeight = blocksToShow * (blockHeight + gap);
-        const startY = tHeight - 15;
+        const startY = tHeight - 12;
         
-        // Draw ground line
         tCtx.strokeStyle = '#3a3a4e';
         tCtx.lineWidth = 1;
         tCtx.beginPath();
@@ -847,7 +1112,6 @@
         tCtx.lineTo(tWidth - 20, startY + 5);
         tCtx.stroke();
         
-        // Draw each block
         for (let i = 0; i < blocksToShow; i++) {
             const widthRatio = 1 - (i * 0.04);
             const blockWidth = Math.max(maxBlockWidth * widthRatio, minBlockWidth);
@@ -860,46 +1124,39 @@
             gradient.addColorStop(0, colors[0]);
             gradient.addColorStop(1, colors[1]);
             
-            // Shadow
             tCtx.save();
             tCtx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-            tCtx.shadowBlur = 6;
-            tCtx.shadowOffsetY = 3;
-            roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
+            tCtx.shadowBlur = 5;
+            tCtx.shadowOffsetY = 2;
+            roundRect(tCtx, x, y, blockWidth, blockHeight, 3);
             tCtx.fillStyle = gradient;
             tCtx.fill();
             tCtx.restore();
             
-            // Block
-            roundRect(tCtx, x, y, blockWidth, blockHeight, 4);
+            roundRect(tCtx, x, y, blockWidth, blockHeight, 3);
             tCtx.fillStyle = gradient;
             tCtx.fill();
             
-            // Highlight
             tCtx.save();
             tCtx.globalAlpha = 0.3;
-            roundRect(tCtx, x, y, blockWidth, blockHeight * 0.4, 4);
+            roundRect(tCtx, x, y, blockWidth, blockHeight * 0.4, 3);
             tCtx.fillStyle = '#ffffff';
             tCtx.fill();
             tCtx.restore();
         }
         
-        // Draw comparison indicator if there's a high score to compare
         if (highScore > 0 && score > 0) {
             const percentage = Math.min((score / highScore) * 100, 100);
             
-            // Progress bar at bottom
-            const barWidth = 100;
+            const barWidth = 80;
             const barHeight = 4;
             const barX = (tWidth - barWidth) / 2;
-            const barY = tHeight - 8;
+            const barY = tHeight - 6;
             
-            // Background
             tCtx.fillStyle = '#2a2a3e';
             roundRect(tCtx, barX, barY, barWidth, barHeight, 2);
             tCtx.fill();
             
-            // Fill based on percentage of high score
             if (percentage > 0) {
                 const fillWidth = (barWidth * percentage) / 100;
                 const fillGradient = tCtx.createLinearGradient(barX, barY, barX + fillWidth, barY);
@@ -924,12 +1181,11 @@
             }
         }
         
-        // Sparkles for good scores
         if (score >= 5) {
             const sparkleCount = Math.min(Math.floor(score / 3), 6);
             for (let i = 0; i < sparkleCount; i++) {
-                const sx = 25 + Math.random() * (tWidth - 50);
-                const sy = 15 + Math.random() * 40;
+                const sx = 20 + Math.random() * (tWidth - 40);
+                const sy = 10 + Math.random() * 35;
                 const size = 1.5 + Math.random() * 2;
                 
                 tCtx.save();
@@ -943,25 +1199,23 @@
             }
         }
         
-        // Crown for matching or beating high score
         if (score >= highScore && score > 0) {
-            const crownY = startY - towerHeight - 20;
+            const crownY = startY - towerHeight - 18;
             tCtx.save();
             tCtx.fillStyle = '#ffd93d';
             tCtx.shadowColor = '#ffd93d';
             tCtx.shadowBlur = 10;
             
-            // Simple crown shape
             tCtx.beginPath();
-            tCtx.moveTo(tcenterX - 12, crownY + 10);
-            tCtx.lineTo(tcenterX - 12, crownY + 4);
-            tCtx.lineTo(tcenterX - 8, crownY + 7);
-            tCtx.lineTo(tcenterX - 4, crownY);
-            tCtx.lineTo(tcenterX, crownY + 5);
-            tCtx.lineTo(tcenterX + 4, crownY);
-            tCtx.lineTo(tcenterX + 8, crownY + 7);
-            tCtx.lineTo(tcenterX + 12, crownY + 4);
-            tCtx.lineTo(tcenterX + 12, crownY + 10);
+            tCtx.moveTo(tcenterX - 10, crownY + 8);
+            tCtx.lineTo(tcenterX - 10, crownY + 3);
+            tCtx.lineTo(tcenterX - 6, crownY + 5);
+            tCtx.lineTo(tcenterX - 3, crownY);
+            tCtx.lineTo(tcenterX, crownY + 4);
+            tCtx.lineTo(tcenterX + 3, crownY);
+            tCtx.lineTo(tcenterX + 6, crownY + 5);
+            tCtx.lineTo(tcenterX + 10, crownY + 3);
+            tCtx.lineTo(tcenterX + 10, crownY + 8);
             tCtx.closePath();
             tCtx.fill();
             tCtx.restore();
@@ -1211,7 +1465,6 @@
         state.playing = false;
         state.current = null;
         
-        // Increment games played
         state.gamesPlayed++;
         localStorage.setItem('calveyStackGamesPlayed', state.gamesPlayed.toString());
         
@@ -1223,8 +1476,17 @@
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
         
-        // Draw tower graphic showing actual score
+        // Update leaderboard
+        updateLeaderboard(state.score);
+        
+        // Draw tower graphic
         drawTowerGraphic(state.score, state.highScore);
+        
+        // Update username display
+        updateUsernameDisplay();
+        
+        // Render leaderboard
+        renderLeaderboard();
         
         const quote = getRandomQuote();
         document.getElementById('quoteText').textContent = `"${quote.text}"`;
@@ -1248,6 +1510,7 @@
     
     function handleTap(e) {
         if (e.target.closest('#soundToggle')) return;
+        if (e.target.closest('.username-section')) return;
         if (!state.playing) return;
         e.preventDefault();
         placeBlock();
@@ -1262,10 +1525,52 @@
         startGame();
     });
 
-    document.getElementById('gameOverScreen').addEventListener('click', startGame);
+    // Game over screen tap to restart (excluding interactive elements)
+    document.getElementById('gameOverScreen').addEventListener('click', (e) => {
+        if (e.target.closest('.username-section')) return;
+        if (e.target.closest('.leaderboard')) return;
+        startGame();
+    });
     document.getElementById('gameOverScreen').addEventListener('touchend', (e) => {
+        if (e.target.closest('.username-section')) return;
+        if (e.target.closest('.leaderboard')) return;
         e.preventDefault();
         startGame();
+    });
+
+    // Username handlers
+    document.getElementById('saveUsernameBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const input = document.getElementById('usernameInput');
+        if (input.value.trim()) {
+            saveUsername(input.value);
+            updateLeaderboard(state.score);
+            renderLeaderboard();
+        }
+    });
+
+    document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const input = document.getElementById('usernameInput');
+            if (input.value.trim()) {
+                saveUsername(input.value);
+                updateLeaderboard(state.score);
+                renderLeaderboard();
+            }
+        }
+    });
+
+    document.getElementById('usernameInput').addEventListener('click', (e) => {
+        e.stopPropagation();
+    });
+
+    document.getElementById('changeNameBtn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('usernameInputArea').classList.remove('hidden');
+        document.getElementById('usernameDisplayArea').classList.add('hidden');
+        document.getElementById('usernameInput').value = state.username;
+        document.getElementById('usernameInput').focus();
     });
 
     document.getElementById('soundBtn').addEventListener('click', (e) => {
@@ -1275,13 +1580,18 @@
         e.target.textContent = state.soundEnabled ? '♪' : '✕';
     });
 
-    document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    document.addEventListener('touchmove', (e) => {
+        if (!e.target.closest('.username-input')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
 
     // ============================================================
     // INIT
     // ============================================================
     
     document.getElementById('highScoreValue').textContent = state.highScore;
+    updateUsernameDisplay();
     gameLoop();
 </script>
 ```
