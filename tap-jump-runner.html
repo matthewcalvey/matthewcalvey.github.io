@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Tap Jump Runner</title>
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0; height: 100%;
+      background: #0b0f14;
+      overflow: hidden;
+      touch-action: manipulation; /* allow taps, block double-tap zoom on many browsers */
+      -webkit-user-select: none;
+      user-select: none;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    canvas { display: block; width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<script>
+(() => {
+  // ===== Canvas / DPI handling =====
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d", { alpha: false });
+
+  function resize() {
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    canvas.width  = Math.floor(window.innerWidth * dpr);
+    canvas.height = Math.floor(window.innerHeight * dpr);
+    canvas.style.width = window.innerWidth + "px";
+    canvas.style.height = window.innerHeight + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // draw in CSS pixels
+  }
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  // ===== Game constants (CSS pixels) =====
+  const WORLD = {
+    gravity: 2200,         // px/s^2
+    jumpVel: -780,         // px/s
+    groundPad: 80,         // bottom margin for safe area
+    minObstacleGap: 360,   // px
+    maxObstacleGap: 560,   // px
+    obstacleMinW: 28,
+    obstacleMaxW: 60,
+    obstacleMinH: 34,
+    obstacleMaxH: 110
+  };
+
+  // ===== Game state =====
+  const state = {
+    started: false,
+    dead: false,
+    t: 0,
+    score: 0,
+    best: Number(localStorage.getItem("taprunner_best") || 0),
+    speed: 420,          // px/s initial scroll speed
+    speedRamp: 18,       // px/s per second
+    shake: 0,            // screen shake amount
+    lastSpawnX: 0
+  };
+
+  const player = {
+    x: 120,
+    y: 0,
+    w: 34,
+    h: 34,
+    vy: 0,
+    onGround: true
+  };
+
+  let obstacles = [];
+
+  function groundY() {
+    // Keep UI away from iPhone home indicator; adjust with groundPad.
+    return window.innerHeight - WORLD.groundPad;
+  }
+
+  function reset(runStarts = false) {
+    state.started = runStarts;
+    state.dead = false;
+    state.t = 0;
+    state.score = 0;
+    state.speed = 420;
+    state.shake = 0;
+
+    player.y = groundY() - player.h;
+    player.vy = 0;
+    player.onGround = true;
+
+    obstacles = [];
+    state.lastSpawnX = window.innerWidth + 200;
+    spawnObstacle(state.lastSpawnX);
+    spawnObstacle(state.lastSpawnX + rand(WORLD.minObstacleGap, WORLD.maxObstacleGap));
+  }
+
+  // ===== Spawning =====
+  function spawnObstacle(x) {
+    const w = rand(WORLD.obstacleMinW, WORLD.obstacleMaxW);
+    const h = rand(WORLD.obstacleMinH, WORLD.obstacleMaxH);
+    obstacles.push({
+      x,
+      y: groundY() - h,
+      w, h,
+      passed: false
+    });
+  }
+
+  function ensureObstacles() {
+    // Keep a rolling set of obstacles ahead.
+    const last = obstacles[obstacles.length - 1];
+    if (!last) return;
+
+    if (last.x < window.innerWidth + 500) {
+      const gap = rand(WORLD.minObstacleGap, WORLD.maxObstacleGap);
+      spawnObstacle(last.x + gap);
+    }
+  }
+
+  // ===== Input (tap only) =====
+  function onTap(e) {
+    // Block unwanted scrolling / zooming.
+    if (e && typeof e.preventDefault === "function") e.preventDefault();
+
+    if (!state.started) {
+      reset(true);
+      return;
+    }
+    if (state.dead) {
+      // Instant restart
+      reset(true);
+      return;
+    }
+    // Jump only if on ground (tap-only, simple mastery).
+    if (player.onGround) {
+      player.vy = WORLD.jumpVel;
+      player.onGround = false;
+    }
+  }
+
+  // Pointer events cover mouse + touch in modern iOS.
+  canvas.addEventListener("pointerdown", onTap, { passive: false });
+  // Fallback (older cases)
+  canvas.addEventListener("touchstart", onTap, { passive: false });
+  canvas.addEventListener("mousedown", onTap, { passive: false });
+
+  // ===== Physics / collision =====
+  function aabb(a, b) {
+    return (
+      a.x < b.x + b.w &&
+      a.x + a.w > b.x &&
+      a.y < b.y + b.h &&
+      a.y + a.h > b.y
+    );
+  }
+
+  function die() {
+    state.dead = true;
+    state.shake = 10;
+
+    if (state.score > state.best) {
+      state.best = state.score;
+      localStorage.setItem("taprunner_best", String(state.best));
+    }
+  }
+
+  // ===== Main loop =====
+  let lastTime = performance.now();
+
+  function tick(now) {
+    const dt = Math.min(0.033, (now - lastTime) / 1000); // cap dt for stability
+    lastTime = now;
+
+    update(dt);
+    render();
+
+    requestAnimationFrame(tick);
+  }
+
+  function update(dt) {
+    // Always keep player on ground position updated on resize
+    if (player.onGround) player.y = groundY() - player.h;
+
+    if (!state.started || state.dead) {
+      // Decay shake even when idle/dead
+      state.shake *= 0.88;
+      if (state.shake < 0.2) state.shake = 0;
+      return;
+    }
+
+    state.t += dt;
+
+    // Speed ramps up over time
+    state.speed += state.speedRamp * dt;
+
+    // Score is "distance"
+    state.score += Math.floor(state.speed * dt * 0.05); // tuned for readable numbers
+
+    // Player physics
+    player.vy += WORLD.gravity * dt;
+    player.y += player.vy * dt;
+
+    // Ground collision
+    const gy = groundY() - player.h;
+    if (player.y >= gy) {
+      player.y = gy;
+      player.vy = 0;
+      player.onGround = true;
+    }
+
+    // Move obstacles left
+    for (const ob of obstacles) {
+      ob.x -= state.speed * dt;
+
+      // Passing bonus (optional micro-reward)
+      if (!ob.passed && ob.x + ob.w < player.x) {
+        ob.passed = true;
+        state.score += 25; // small bonus for clearing an obstacle
+      }
+    }
+
+    // Remove offscreen
+    obstacles = obstacles.filter(ob => ob.x + ob.w > -80);
+
+    // Spawn more
+    ensureObstacles();
+
+    // Collision check
+    const pBox = { x: player.x, y: player.y, w: player.w, h: player.h };
+    for (const ob of obstacles) {
+      if (aabb(pBox, ob)) {
+        die();
+        break;
+      }
+    }
+
+    // Screen shake decay
+    state.shake *= 0.9;
+    if (state.shake < 0.2) state.shake = 0;
+  }
+
+  // ===== Rendering =====
+  function render() {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const gy = groundY();
+
+    // Background
+    ctx.clearRect(0, 0, w, h);
+
+    // Subtle shake (web-safe "haptics proxy")
+    const sx = (Math.random() - 0.5) * state.shake;
+    const sy = (Math.random() - 0.5) * state.shake;
+    ctx.save();
+    ctx.translate(sx, sy);
+
+    // Sky gradient
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, "#0b0f14");
+    g.addColorStop(1, "#101826");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Ground
+    ctx.fillStyle = "#1c2a3a";
+    ctx.fillRect(0, gy, w, h - gy);
+
+    // Ground line
+    ctx.fillStyle = "#2a3f57";
+    ctx.fillRect(0, gy, w, 3);
+
+    // Obstacles
+    for (const ob of obstacles) {
+      // Simple “juicy” look: base + highlight
+      ctx.fillStyle = "#e44b4b";
+      roundRect(ctx, ob.x, ob.y, ob.w, ob.h, 8, true, false);
+
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "#ffffff";
+      roundRect(ctx, ob.x + 6, ob.y + 8, Math.max(6, ob.w - 12), Math.max(10, ob.h * 0.25), 6, true, false);
+      ctx.globalAlpha = 1;
+    }
+
+    // Player
+    ctx.fillStyle = "#62d26f";
+    roundRect(ctx, player.x, player.y, player.w, player.h, 10, true, false);
+
+    // Player eye (tiny feedback cue)
+    ctx.fillStyle = "#0b0f14";
+    ctx.fillRect(player.x + player.w * 0.62, player.y + player.h * 0.28, 6, 6);
+
+    // HUD
+    ctx.fillStyle = "rgba(255,255,255,0.92)";
+    ctx.font = "700 18px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textBaseline = "top";
+    ctx.fillText(`Score: ${state.score}`, 16, 16);
+    ctx.font = "600 14px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.fillText(`Best: ${state.best}`, 16, 40);
+
+    // Start / Dead overlays
+    if (!state.started) {
+      overlayBox(w, h, "Tap to Start", "Tap to jump. Clear obstacles. Instant restart.");
+    } else if (state.dead) {
+      overlayBox(w, h, "Game Over", "Tap to restart.");
+    }
+
+    ctx.restore();
+  }
+
+  function overlayBox(w, h, title, subtitle) {
+    const bw = Math.min(420, w - 48);
+    const bh = 130;
+    const bx = (w - bw) / 2;
+    const by = (h - bh) / 2;
+
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    roundRect(ctx, bx, by, bw, bh, 16, true, false);
+
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.font = "800 26px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(title, w / 2, by + 45);
+
+    ctx.font = "500 14px system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial";
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillText(subtitle, w / 2, by + 88);
+
+    ctx.textAlign = "start";
+  }
+
+  // Utility: rounded rectangle
+  function roundRect(ctx, x, y, w, h, r, fill, stroke) {
+    const rr = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.arcTo(x + w, y, x + w, y + h, rr);
+    ctx.arcTo(x + w, y + h, x, y + h, rr);
+    ctx.arcTo(x, y + h, x, y, rr);
+    ctx.arcTo(x, y, x + w, y, rr);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+
+  function rand(min, max) {
+    return Math.floor(min + Math.random() * (max - min + 1));
+  }
+
+  // Prevent iOS "rubber band" / scroll gestures from interfering
+  document.addEventListener("touchmove", (e) => {
+    if (state.started) e.preventDefault();
+  }, { passive: false });
+
+  // Start idle screen
+  reset(false);
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
