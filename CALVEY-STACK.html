@@ -1277,7 +1277,24 @@
                 return;
             }
             
-            state.leaderboard.forEach((entry, index) => {
+            // Deduplicate by player ID, keeping only the highest score for each player
+            const deduped = [];
+            const seenIds = new Set();
+            
+            // Sort by score descending first to ensure we keep the highest score
+            const sorted = [...state.leaderboard].sort((a, b) => b.score - a.score);
+            
+            for (const entry of sorted) {
+                if (!seenIds.has(entry.id)) {
+                    seenIds.add(entry.id);
+                    deduped.push(entry);
+                }
+            }
+            
+            // Limit to max entries
+            const finalList = deduped.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
+            
+            finalList.forEach((entry, index) => {
                 const isCurrentPlayer = entry.id === state.visitorId;
                 
                 const entryEl = document.createElement('div');
