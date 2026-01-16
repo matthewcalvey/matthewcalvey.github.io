@@ -8,19 +8,24 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>STACK - CALVEY INC.</title>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg: #0f0f13;
-            --bg-lighter: #1a1a22;
-            --bg-card: #1e1e28;
-            --perfect: #ffd93d;
-            --text: #ffffff;
-            --text-dim: #5a5a6e;
-            --text-quote: #9a9ab0;
-            --border: #2a2a3e;
-        }
 
 ```
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+<style>
+    :root {
+        --bg: #0f0f13;
+        --bg-lighter: #1a1a22;
+        --bg-card: #1e1e28;
+        --perfect: #ffd93d;
+        --text: #ffffff;
+        --text-dim: #5a5a6e;
+        --text-quote: #9a9ab0;
+        --border: #2a2a3e;
+    }
+
     * {
         margin: 0;
         padding: 0;
@@ -493,7 +498,7 @@
         text-transform: uppercase;
     }
 
-    /* Leaderboard Section - NOW BELOW QUOTE */
+    /* Leaderboard Section */
     .leaderboard-section {
         width: 100%;
         max-width: 300px;
@@ -525,6 +530,10 @@
 
     .leaderboard-status.loading {
         color: var(--perfect);
+    }
+
+    .leaderboard-status.offline {
+        color: #f5576c;
     }
 
     .leaderboard {
@@ -681,7 +690,7 @@
         <p class="tap-start">Tap to Play</p>
     </div>
 
-    <!-- Game over screen - REORDERED: Quote first, then Leaderboard -->
+    <!-- Game over screen -->
     <div id="gameOverScreen">
         <div class="game-over-wrapper">
             <div class="tower-graphic">
@@ -712,13 +721,13 @@
                 </div>
             </div>
 
-            <!-- Inspirational Quote - NOW FIRST -->
+            <!-- Inspirational Quote -->
             <div class="quote-section">
                 <p class="quote-text" id="quoteText">"Success is not final, failure is not fatal: it is the courage to continue that counts."</p>
                 <p class="quote-author" id="quoteAuthor">— Winston Churchill</p>
             </div>
             
-            <!-- Global Leaderboard - NOW BELOW QUOTE -->
+            <!-- Global Leaderboard -->
             <div class="leaderboard-section">
                 <div class="leaderboard-header">
                     🏆 Global Leaderboard
@@ -735,6 +744,86 @@
 </div>
 
 <script>
+    // ============================================================
+    // FIREBASE CONFIGURATION
+    // ============================================================
+    // 
+    // TO SET UP YOUR OWN FIREBASE DATABASE:
+    // 1. Go to https://console.firebase.google.com/
+    // 2. Create a new project (or use existing)
+    // 3. Click "Build" > "Realtime Database" > "Create Database"
+    // 4. Choose your region, start in "test mode" for now
+    // 5. Go to Project Settings > General > Your apps > Add web app
+    // 6. Copy the firebaseConfig object and replace below
+    // 7. In Database > Rules, set these rules for security:
+    //    {
+    //      "rules": {
+    //        "leaderboard": {
+    //          ".read": true,
+    //          ".write": true,
+    //          ".indexOn": ["score"]
+    //        }
+    //      }
+    //    }
+    //
+    // For production, use more restrictive rules to prevent abuse.
+    // ============================================================
+    
+    const firebaseConfig = {
+        // REPLACE THESE WITH YOUR FIREBASE CONFIG
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        storageBucket: "YOUR_PROJECT.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID"
+    };
+
+    // Initialize Firebase
+    let firebaseApp = null;
+    let database = null;
+    let firebaseConnected = false;
+
+    function initFirebase() {
+        try {
+            // Check if config is set up
+            if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                console.log('Firebase not configured - using local storage only');
+                return false;
+            }
+            
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            
+            // Listen for connection state
+            const connectedRef = database.ref('.info/connected');
+            connectedRef.on('value', (snap) => {
+                firebaseConnected = snap.val() === true;
+                updateConnectionStatus();
+            });
+            
+            return true;
+        } catch (error) {
+            console.error('Firebase initialization failed:', error);
+            return false;
+        }
+    }
+
+    function updateConnectionStatus() {
+        const statusEl = document.getElementById('leaderboardStatus');
+        if (firebaseConnected) {
+            statusEl.textContent = '(live)';
+            statusEl.className = 'leaderboard-status live';
+        } else if (database) {
+            statusEl.textContent = '(connecting...)';
+            statusEl.className = 'leaderboard-status loading';
+        } else {
+            statusEl.textContent = '(local only)';
+            statusEl.className = 'leaderboard-status offline';
+        }
+    }
+
     // ============================================================
     // CONFIGURATION
     // ============================================================
@@ -859,68 +948,171 @@
     }
 
     // ============================================================
-    // SHARED STORAGE API (Global Leaderboard - Visible to ALL devices)
+    // LEADERBOARD FUNCTIONS (Firebase + Local Storage Fallback)
     // ============================================================
-    
-    const LEADERBOARD_KEY = 'calvey-stack-global-leaderboard-v1';
     
     async function loadGlobalLeaderboard() {
         const statusEl = document.getElementById('leaderboardStatus');
         statusEl.textContent = '(loading...)';
         statusEl.className = 'leaderboard-status loading';
         
-        try {
-            // Use shared storage (shared: true) - visible to ALL users on ALL devices
-            if (window.storage) {
-                const result = await window.storage.get(LEADERBOARD_KEY, true);
-                if (result && result.value) {
-                    state.leaderboard = JSON.parse(result.value);
-                    statusEl.textContent = '(live)';
-                    statusEl.className = 'leaderboard-status live';
-                    renderLeaderboard();
-                    return;
+        // Try Firebase first
+        if (database) {
+            try {
+                const snapshot = await database.ref('leaderboard')
+                    .orderByChild('score')
+                    .limitToLast(CONFIG.MAX_LEADERBOARD_ENTRIES)
+                    .once('value');
+                
+                const data = snapshot.val();
+                if (data) {
+                    // Convert to array and sort descending
+                    state.leaderboard = Object.entries(data)
+                        .map(([key, value]) => ({ ...value, firebaseKey: key }))
+                        .sort((a, b) => b.score - a.score);
+                } else {
+                    state.leaderboard = [];
                 }
+                
+                statusEl.textContent = '(live)';
+                statusEl.className = 'leaderboard-status live';
+                renderLeaderboard();
+                
+                // Set up real-time listener
+                setupRealtimeListener();
+                return;
+            } catch (error) {
+                console.error('Firebase load error:', error);
             }
-        } catch (e) {
-            console.log('Loading from shared storage failed:', e);
         }
         
-        // If no shared data exists yet, start with empty leaderboard
-        state.leaderboard = [];
-        statusEl.textContent = '(live)';
-        statusEl.className = 'leaderboard-status live';
+        // Fallback to local storage
+        loadLocalLeaderboard();
+    }
+
+    function setupRealtimeListener() {
+        if (!database) return;
+        
+        database.ref('leaderboard')
+            .orderByChild('score')
+            .limitToLast(CONFIG.MAX_LEADERBOARD_ENTRIES)
+            .on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    state.leaderboard = Object.entries(data)
+                        .map(([key, value]) => ({ ...value, firebaseKey: key }))
+                        .sort((a, b) => b.score - a.score);
+                } else {
+                    state.leaderboard = [];
+                }
+                renderLeaderboard();
+            });
+    }
+
+    function loadLocalLeaderboard() {
+        const statusEl = document.getElementById('leaderboardStatus');
+        try {
+            const stored = localStorage.getItem('calveyStackLeaderboard');
+            if (stored) {
+                state.leaderboard = JSON.parse(stored);
+            }
+        } catch (e) {
+            state.leaderboard = [];
+        }
+        
+        statusEl.textContent = '(local only)';
+        statusEl.className = 'leaderboard-status offline';
         renderLeaderboard();
     }
 
-    async function saveGlobalLeaderboard() {
+    function saveLocalLeaderboard() {
         try {
-            // Save to shared storage with shared: true
-            // This makes it visible to ALL users across ALL devices
-            if (window.storage) {
-                await window.storage.set(LEADERBOARD_KEY, JSON.stringify(state.leaderboard), true);
-                console.log('Leaderboard saved to shared storage');
-            }
+            localStorage.setItem('calveyStackLeaderboard', JSON.stringify(state.leaderboard));
         } catch (e) {
-            console.log('Could not save to shared storage:', e);
+            console.error('Could not save local leaderboard:', e);
         }
     }
 
     async function updateLeaderboard(score) {
         if (!state.username || score === 0) return;
         
-        // Reload latest leaderboard first to get most recent data
-        try {
-            if (window.storage) {
-                const result = await window.storage.get(LEADERBOARD_KEY, true);
-                if (result && result.value) {
-                    state.leaderboard = JSON.parse(result.value);
+        // Try Firebase first
+        if (database && firebaseConnected) {
+            try {
+                // Check if player already has an entry
+                const existingSnapshot = await database.ref('leaderboard')
+                    .orderByChild('id')
+                    .equalTo(state.visitorId)
+                    .once('value');
+                
+                const existingData = existingSnapshot.val();
+                
+                if (existingData) {
+                    // Player exists - update only if new score is higher
+                    const existingKey = Object.keys(existingData)[0];
+                    const existingScore = existingData[existingKey].score;
+                    
+                    if (score > existingScore) {
+                        await database.ref('leaderboard/' + existingKey).update({
+                            name: state.username,
+                            score: score,
+                            timestamp: Date.now()
+                        });
+                        console.log('Updated existing leaderboard entry');
+                    }
+                } else {
+                    // New player - add entry
+                    await database.ref('leaderboard').push({
+                        id: state.visitorId,
+                        name: state.username,
+                        score: score,
+                        timestamp: Date.now()
+                    });
+                    console.log('Added new leaderboard entry');
+                    
+                    // Clean up old entries if we have too many
+                    cleanupLeaderboard();
                 }
+                
+                return;
+            } catch (error) {
+                console.error('Firebase update error:', error);
             }
-        } catch (e) {
-            console.log('Could not refresh leaderboard');
         }
         
-        // Check if this player already exists (by visitorId)
+        // Fallback to local storage
+        updateLocalLeaderboard(score);
+    }
+
+    async function cleanupLeaderboard() {
+        if (!database) return;
+        
+        try {
+            const snapshot = await database.ref('leaderboard')
+                .orderByChild('score')
+                .once('value');
+            
+            const data = snapshot.val();
+            if (!data) return;
+            
+            const entries = Object.entries(data)
+                .map(([key, value]) => ({ key, ...value }))
+                .sort((a, b) => b.score - a.score);
+            
+            // Remove entries beyond the max limit
+            if (entries.length > CONFIG.MAX_LEADERBOARD_ENTRIES) {
+                const toRemove = entries.slice(CONFIG.MAX_LEADERBOARD_ENTRIES);
+                for (const entry of toRemove) {
+                    await database.ref('leaderboard/' + entry.key).remove();
+                }
+            }
+        } catch (error) {
+            console.error('Cleanup error:', error);
+        }
+    }
+
+    function updateLocalLeaderboard(score) {
+        // Check if this player already exists
         const existingIndex = state.leaderboard.findIndex(entry => entry.id === state.visitorId);
         
         if (existingIndex !== -1) {
@@ -946,11 +1138,17 @@
         // Keep only top entries
         state.leaderboard = state.leaderboard.slice(0, CONFIG.MAX_LEADERBOARD_ENTRIES);
         
-        // Save to shared storage (visible to all devices)
-        await saveGlobalLeaderboard();
+        // Save to local storage
+        saveLocalLeaderboard();
         
         // Re-render
         renderLeaderboard();
+    }
+
+    // Submit player's best score on first username save
+    async function submitBestScore() {
+        if (!state.username || state.highScore === 0) return;
+        await updateLeaderboard(state.highScore);
     }
 
     // ============================================================
@@ -1041,9 +1239,16 @@
     // ============================================================
     
     function saveUsername(name) {
+        const isNewUser = !state.username;
         state.username = name.trim().substring(0, 12);
         localStorage.setItem('calveyStackUsername', state.username);
         updateUsernameDisplay();
+        
+        // If this is the first time setting username and player has a high score,
+        // submit their best score to the leaderboard
+        if (isNewUser && state.highScore > 0) {
+            submitBestScore();
+        }
     }
 
     function updateUsernameDisplay() {
@@ -1588,7 +1793,7 @@
             localStorage.setItem('calveyStackHighScore', state.highScore.toString());
         }
         
-        // Update global leaderboard (shared across all devices)
+        // Update global leaderboard
         await updateLeaderboard(state.score);
         
         // Draw tower graphic
@@ -1652,7 +1857,11 @@
         const input = document.getElementById('usernameInput');
         if (input.value.trim()) {
             saveUsername(input.value);
-            await updateLeaderboard(state.score);
+            // Submit current game score OR best score (whichever is higher)
+            const scoreToSubmit = Math.max(state.score, state.highScore);
+            if (scoreToSubmit > 0) {
+                await updateLeaderboard(scoreToSubmit);
+            }
         }
     });
 
@@ -1662,7 +1871,10 @@
             const input = document.getElementById('usernameInput');
             if (input.value.trim()) {
                 saveUsername(input.value);
-                await updateLeaderboard(state.score);
+                const scoreToSubmit = Math.max(state.score, state.highScore);
+                if (scoreToSubmit > 0) {
+                    await updateLeaderboard(scoreToSubmit);
+                }
             }
         }
     });
@@ -1698,7 +1910,11 @@
     
     document.getElementById('highScoreValue').textContent = state.highScore;
     updateUsernameDisplay();
-    loadGlobalLeaderboard(); // Load shared leaderboard on startup
+    
+    // Initialize Firebase and load leaderboard
+    initFirebase();
+    loadGlobalLeaderboard();
+    
     gameLoop();
 </script>
 ```
