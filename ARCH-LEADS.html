@@ -3,24 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARCH LEADS | RFP Tracker</title>
+    <title>ARCH LEADS | RFP & RFQ Tracker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-dark: #0a0a0a;
-            --bg-card: #141414;
-            --border: #2a2a2a;
-            --text-primary: #f5f5f0;
-            --text-secondary: #8a8a80;
-            --accent-airport: #ff6b35;
-            --accent-academic: #4ecdc4;
-            --accent-laboratory: #a855f7;
-            --accent-civic: #3b82f6;
-            --accent-landscape: #22c55e;
-            --accent-urgent: #ff3366;
-            --grain-opacity: 0.03;
+            --bg-light: #f8f7f4;
+            --bg-card: #eeedea;
+            --border: #d8d6d0;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6b6b65;
+            --accent-airport: #e85a24;
+            --accent-academic: #0d9488;
+            --accent-laboratory: #9333ea;
+            --accent-civic: #2563eb;
+            --accent-landscape: #16a34a;
+            --accent-urgent: #dc2626;
+            --grain-opacity: 0.02;
         }
 
         * {
@@ -31,7 +31,7 @@
 
         body {
             font-family: 'DM Mono', monospace;
-            background: var(--bg-dark);
+            background: var(--bg-light);
             color: var(--text-primary);
             min-height: 100vh;
             position: relative;
@@ -58,8 +58,8 @@
             width: 100%;
             height: 100%;
             background-image: 
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+                linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px);
             background-size: 60px 60px;
             pointer-events: none;
         }
@@ -127,7 +127,7 @@
 
         .refresh-btn:hover {
             background: var(--text-primary);
-            color: var(--bg-dark);
+            color: var(--bg-light);
         }
 
         .refresh-btn svg {
@@ -166,7 +166,7 @@
         .filter-btn:hover,
         .filter-btn.active {
             background: var(--text-primary);
-            color: var(--bg-dark);
+            color: var(--bg-light);
             border-color: var(--text-primary);
         }
 
@@ -193,6 +193,45 @@
         .filter-btn.landscape.active {
             background: var(--accent-landscape);
             border-color: var(--accent-landscape);
+        }
+
+        .solicitation-filters {
+            padding-bottom: 0.5rem;
+        }
+
+        .filters:not(.solicitation-filters) {
+            border-top: none;
+            padding-top: 0.5rem;
+        }
+
+        .sol-filter.rfp.active {
+            background: #f59e0b;
+            border-color: #f59e0b;
+        }
+
+        .sol-filter.rfq.active {
+            background: #8b5cf6;
+            border-color: #8b5cf6;
+        }
+
+        .sol-badge {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 0.2rem 0.5rem;
+            border-radius: 2px;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .sol-badge.rfp {
+            background: rgba(245, 158, 11, 0.15);
+            color: #f59e0b;
+        }
+
+        .sol-badge.rfq {
+            background: rgba(139, 92, 246, 0.15);
+            color: #8b5cf6;
         }
 
         main {
@@ -271,7 +310,7 @@
         .lead-card:hover {
             transform: translateY(-4px) scale(1.01);
             border-color: var(--text-secondary);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
         }
 
         .lead-card:hover::before {
@@ -474,7 +513,7 @@
             justify-content: center;
             gap: 3rem;
             padding: 1rem 2rem;
-            background: rgba(20,20,20,0.5);
+            background: rgba(0,0,0,0.02);
             border-bottom: 1px solid var(--border);
             flex-wrap: wrap;
         }
@@ -544,7 +583,7 @@
         <div class="header-content">
             <div>
                 <h1 class="logo">Arch<span>Leads</span></h1>
-                <p class="tagline">Airport & Academic RFP Intelligence</p>
+                <p class="tagline">Architecture RFP & RFQ Intelligence</p>
             </div>
             <div class="header-meta">
                 <div id="last-updated">Loading...</div>
@@ -561,7 +600,15 @@
     <div class="stats-bar">
         <div class="stat">
             <div class="stat-value" id="total-leads">—</div>
-            <div class="stat-label">Active RFPs</div>
+            <div class="stat-label">Total</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="rfp-count">—</div>
+            <div class="stat-label">RFPs</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="rfq-count">—</div>
+            <div class="stat-label">RFQs</div>
         </div>
         <div class="stat">
             <div class="stat-value" id="airport-count">—</div>
@@ -587,6 +634,12 @@
             <div class="stat-value" id="urgent-count">—</div>
             <div class="stat-label">Due &lt;14 Days</div>
         </div>
+    </div>
+
+    <div class="filters solicitation-filters">
+        <button class="filter-btn sol-filter active" data-sol="all">All Types</button>
+        <button class="filter-btn sol-filter rfq" data-sol="rfq">RFQ - Request for Qualifications</button>
+        <button class="filter-btn sol-filter rfp" data-sol="rfp">RFP - Request for Proposal</button>
     </div>
 
     <div class="filters">
@@ -621,6 +674,7 @@
             {
                 id: 1,
                 type: 'airport',
+                solType: 'rfp',
                 title: 'FY 2026 Airport Terminal Program (ATP)',
                 location: 'Nationwide - FAA Competitive Grant',
                 dueDate: '2026-01-15',
@@ -635,6 +689,7 @@
             {
                 id: 2,
                 type: 'airport',
+                solType: 'rfq',
                 title: 'SMForward Concourse B Expansion CMAR',
                 location: 'Sacramento International Airport (SMF), CA',
                 dueDate: '2026-02-15',
@@ -649,6 +704,7 @@
             {
                 id: 3,
                 type: 'airport',
+                solType: 'rfq',
                 title: 'Sustainable Airport Master Plan Implementation',
                 location: 'Seattle-Tacoma International (SEA), WA',
                 dueDate: '2026-03-01',
@@ -664,6 +720,7 @@
             {
                 id: 4,
                 type: 'academic',
+                solType: 'rfq',
                 title: 'Burke-Gilman Trail Transit Access Design-Build',
                 location: 'University of Washington, Seattle, WA',
                 dueDate: '2026-01-31',
@@ -678,6 +735,7 @@
             {
                 id: 5,
                 type: 'academic',
+                solType: 'rfq',
                 title: 'Kent State Advanced Aviation Training Center',
                 location: 'Kent State University, OH',
                 dueDate: '2026-02-28',
@@ -692,6 +750,7 @@
             {
                 id: 6,
                 type: 'academic',
+                solType: 'rfq',
                 title: 'UCLA Capital Projects - Various',
                 location: 'UCLA, Los Angeles, CA',
                 dueDate: '2026-02-01',
@@ -707,6 +766,7 @@
             {
                 id: 7,
                 type: 'laboratory',
+                solType: 'rfp',
                 title: 'NIH Biomedical Research Facilities (C06)',
                 location: 'Nationwide - NIH Grant Program',
                 dueDate: '2026-02-25',
@@ -721,6 +781,7 @@
             {
                 id: 8,
                 type: 'laboratory',
+                solType: 'rfq',
                 title: 'UWMC Energy Performance Upgrades',
                 location: 'UW Medical Center Montlake, Seattle, WA',
                 dueDate: '2026-01-28',
@@ -735,6 +796,7 @@
             {
                 id: 9,
                 type: 'laboratory',
+                solType: 'rfp',
                 title: 'NIH Design Requirements Manual Projects',
                 location: 'NIH Campus, Bethesda, MD',
                 dueDate: '2026-03-15',
@@ -750,6 +812,7 @@
             {
                 id: 10,
                 type: 'civic',
+                solType: 'rfq',
                 title: 'Hartford Federal Courthouse',
                 location: 'Hartford, CT',
                 dueDate: '2026-03-01',
@@ -764,6 +827,7 @@
             {
                 id: 11,
                 type: 'civic',
+                solType: 'rfq',
                 title: 'Chattanooga Federal Courthouse',
                 location: 'Chattanooga, TN',
                 dueDate: '2026-02-15',
@@ -778,6 +842,7 @@
             {
                 id: 12,
                 type: 'civic',
+                solType: 'rfp',
                 title: 'Tomochichi Federal Building Renovation',
                 location: 'Savannah, GA',
                 dueDate: '2026-06-01',
@@ -792,6 +857,7 @@
             {
                 id: 13,
                 type: 'civic',
+                solType: 'rfp',
                 title: 'GSA Region 09 Construction IDIQ',
                 location: 'California, Nevada, Arizona',
                 dueDate: '2026-02-10',
@@ -807,6 +873,7 @@
             {
                 id: 14,
                 type: 'landscape',
+                solType: 'rfp',
                 title: 'West Neck Farm Historic Landscape Report',
                 location: 'Huntington, NY',
                 dueDate: '2026-01-09',
@@ -821,6 +888,7 @@
             {
                 id: 15,
                 type: 'landscape',
+                solType: 'rfq',
                 title: 'ASLA RFQs & Opportunities',
                 location: 'Nationwide',
                 dueDate: '2026-03-31',
@@ -835,6 +903,7 @@
             {
                 id: 16,
                 type: 'landscape',
+                solType: 'rfp',
                 title: 'Planetizen Urban Planning RFP Board',
                 location: 'Nationwide',
                 dueDate: '2026-03-31',
@@ -849,6 +918,7 @@
             {
                 id: 17,
                 type: 'landscape',
+                solType: 'rfq',
                 title: 'Hoboken Professional Services RFQ',
                 location: 'Hoboken, NJ',
                 dueDate: '2026-01-31',
@@ -864,6 +934,7 @@
             {
                 id: 18,
                 type: 'academic',
+                solType: 'rfq',
                 title: 'UC Berkeley Capital Projects',
                 location: 'UC Berkeley, CA',
                 dueDate: '2026-02-15',
@@ -878,6 +949,7 @@
             {
                 id: 19,
                 type: 'civic',
+                solType: 'rfp',
                 title: 'SAM.gov A/E Contract Opportunities',
                 location: 'Federal - Nationwide',
                 dueDate: '2026-03-31',
@@ -892,6 +964,7 @@
             {
                 id: 20,
                 type: 'laboratory',
+                solType: 'rfp',
                 title: 'Grants.gov Research Facility Funding',
                 location: 'Federal - Nationwide',
                 dueDate: '2026-03-31',
@@ -947,10 +1020,15 @@
                 landscape: '🌿 Landscape'
             };
 
+            const solLabel = lead.solType === 'rfq' ? 'RFQ' : 'RFP';
+
             return `
-                <a href="${lead.url}" target="_blank" rel="noopener noreferrer" class="lead-card ${lead.type}" data-type="${lead.type}">
+                <a href="${lead.url}" target="_blank" rel="noopener noreferrer" class="lead-card ${lead.type}" data-type="${lead.type}" data-sol="${lead.solType}">
                     <div class="card-header">
-                        <span class="card-type ${lead.type}">${typeLabels[lead.type]}</span>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="card-type ${lead.type}">${typeLabels[lead.type]}</span>
+                            <span class="sol-badge ${lead.solType}">${solLabel}</span>
+                        </div>
                         <div class="due-date">
                             <div class="due-label">Deadline</div>
                             <div class="due-value ${dueDateClass}">${formatDate(lead.dueDate)}</div>
@@ -998,19 +1076,24 @@
             `;
         }
 
-        function renderLeads(filter = 'all') {
+        let currentCategoryFilter = 'all';
+        let currentSolFilter = 'all';
+
+        function renderLeads() {
             const container = document.getElementById('leads-container');
             
-            // Filter leads
-            let filteredLeads = filter === 'all' 
-                ? [...sampleRFPs] 
-                : sampleRFPs.filter(lead => lead.type === filter);
+            // Filter leads by both category and solicitation type
+            let filteredLeads = sampleRFPs.filter(lead => {
+                const categoryMatch = currentCategoryFilter === 'all' || lead.type === currentCategoryFilter;
+                const solMatch = currentSolFilter === 'all' || lead.solType === currentSolFilter;
+                return categoryMatch && solMatch;
+            });
             
             // Sort by due date - soonest at BOTTOM (descending order, so furthest dates first)
             filteredLeads.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
             
             if (filteredLeads.length === 0) {
-                container.innerHTML = '<div class="no-results">No RFPs found matching your criteria.</div>';
+                container.innerHTML = '<div class="no-results">No RFPs or RFQs found matching your criteria.</div>';
                 return;
             }
             
@@ -1022,6 +1105,8 @@
             document.getElementById('last-updated').textContent = 
                 `Last updated: ${now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}`;
             
+            const rfpCount = sampleRFPs.filter(l => l.solType === 'rfp').length;
+            const rfqCount = sampleRFPs.filter(l => l.solType === 'rfq').length;
             const airportCount = sampleRFPs.filter(l => l.type === 'airport').length;
             const academicCount = sampleRFPs.filter(l => l.type === 'academic').length;
             const laboratoryCount = sampleRFPs.filter(l => l.type === 'laboratory').length;
@@ -1030,6 +1115,8 @@
             const urgentCount = sampleRFPs.filter(l => getDaysUntil(l.dueDate) <= 14).length;
             
             document.getElementById('total-leads').textContent = sampleRFPs.length;
+            document.getElementById('rfp-count').textContent = rfpCount;
+            document.getElementById('rfq-count').textContent = rfqCount;
             document.getElementById('airport-count').textContent = airportCount;
             document.getElementById('academic-count').textContent = academicCount;
             document.getElementById('laboratory-count').textContent = laboratoryCount;
@@ -1038,12 +1125,23 @@
             document.getElementById('urgent-count').textContent = urgentCount;
         }
 
-        // Filter button handlers
-        document.querySelectorAll('.filter-btn').forEach(btn => {
+        // Category filter button handlers
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
             btn.addEventListener('click', function() {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                renderLeads(this.dataset.filter);
+                currentCategoryFilter = this.dataset.filter;
+                renderLeads();
+            });
+        });
+
+        // Solicitation type filter button handlers
+        document.querySelectorAll('.filter-btn[data-sol]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.filter-btn[data-sol]').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentSolFilter = this.dataset.sol;
+                renderLeads();
             });
         });
 
