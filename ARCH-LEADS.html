@@ -16,6 +16,9 @@
             --text-secondary: #8a8a80;
             --accent-airport: #ff6b35;
             --accent-academic: #4ecdc4;
+            --accent-laboratory: #a855f7;
+            --accent-civic: #3b82f6;
+            --accent-landscape: #22c55e;
             --accent-urgent: #ff3366;
             --grain-opacity: 0.03;
         }
@@ -177,6 +180,21 @@
             border-color: var(--accent-academic);
         }
 
+        .filter-btn.laboratory.active {
+            background: var(--accent-laboratory);
+            border-color: var(--accent-laboratory);
+        }
+
+        .filter-btn.civic.active {
+            background: var(--accent-civic);
+            border-color: var(--accent-civic);
+        }
+
+        .filter-btn.landscape.active {
+            background: var(--accent-landscape);
+            border-color: var(--accent-landscape);
+        }
+
         main {
             max-width: 1000px;
             margin: 0 auto;
@@ -238,6 +256,18 @@
             background: var(--accent-academic);
         }
 
+        .lead-card.laboratory::before {
+            background: var(--accent-laboratory);
+        }
+
+        .lead-card.civic::before {
+            background: var(--accent-civic);
+        }
+
+        .lead-card.landscape::before {
+            background: var(--accent-landscape);
+        }
+
         .lead-card:hover {
             transform: translateY(-4px) scale(1.01);
             border-color: var(--text-secondary);
@@ -273,6 +303,21 @@
         .card-type.academic {
             background: rgba(78, 205, 196, 0.15);
             color: var(--accent-academic);
+        }
+
+        .card-type.laboratory {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-laboratory);
+        }
+
+        .card-type.civic {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-civic);
+        }
+
+        .card-type.landscape {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--accent-landscape);
         }
 
         .due-date {
@@ -520,11 +565,23 @@
         </div>
         <div class="stat">
             <div class="stat-value" id="airport-count">—</div>
-            <div class="stat-label">Airport</div>
+            <div class="stat-label">Aviation</div>
         </div>
         <div class="stat">
             <div class="stat-value" id="academic-count">—</div>
             <div class="stat-label">Academic</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="laboratory-count">—</div>
+            <div class="stat-label">Laboratory</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="civic-count">—</div>
+            <div class="stat-label">Civic</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="landscape-count">—</div>
+            <div class="stat-label">Landscape</div>
         </div>
         <div class="stat">
             <div class="stat-value" id="urgent-count">—</div>
@@ -536,6 +593,9 @@
         <button class="filter-btn active" data-filter="all">All Projects</button>
         <button class="filter-btn airport" data-filter="airport">Aviation / Airport</button>
         <button class="filter-btn academic" data-filter="academic">Academic / Education</button>
+        <button class="filter-btn laboratory" data-filter="laboratory">Laboratory / Research</button>
+        <button class="filter-btn civic" data-filter="civic">Civic / Government</button>
+        <button class="filter-btn landscape" data-filter="landscape">Landscape / Public Space</button>
     </div>
 
     <main>
@@ -549,153 +609,299 @@
     </main>
 
     <footer>
-        <p>Data aggregated from public procurement sources • Updates on page refresh</p>
-        <p style="margin-top: 0.5rem; opacity: 0.6;">Built for architecture professionals pursuing airport & academic projects</p>
+        <p>Links connect to official procurement portals • Verify deadlines on source sites</p>
+        <p style="margin-top: 0.5rem; opacity: 0.6;">Key sources: SAM.gov • FAA IIJA • University procurement offices</p>
     </footer>
 
     <script>
         // Sample RFP data - In production, this would fetch from actual procurement APIs
         // Sources: SAM.gov, state procurement portals, BidNet, etc.
         const sampleRFPs = [
+            // AIRPORT
             {
                 id: 1,
                 type: 'airport',
-                title: 'Terminal Modernization and Expansion Program',
-                location: 'Kansas City International Airport (MCI), MO',
-                dueDate: '2026-02-15',
-                projectValue: '$1.5B - $2.0B',
-                size: '1.1M SF',
-                contact: 'Sarah Mitchell, Procurement Manager',
-                email: 'smitchell@flykci.com',
-                phone: '(816) 243-5200',
-                url: 'https://sam.gov/opp/example1',
-                description: 'Design services for new single terminal facility'
+                title: 'FY 2026 Airport Terminal Program (ATP)',
+                location: 'Nationwide - FAA Competitive Grant',
+                dueDate: '2026-01-15',
+                projectValue: '$1B Total Program',
+                size: 'Various',
+                contact: 'Dan Neumann, FAA IIJA Branch',
+                email: 'IIJA.Airports@faa.gov',
+                phone: '(202) 267-8328',
+                url: 'https://www.faa.gov/iija/airport-terminals',
+                description: 'Final year of $5B terminal modernization program'
             },
             {
                 id: 2,
-                type: 'academic',
-                title: 'Science & Engineering Complex',
-                location: 'University of Michigan, Ann Arbor, MI',
-                dueDate: '2026-02-03',
-                projectValue: '$250M - $300M',
-                size: '350,000 SF',
-                contact: 'Dr. James Chen, Facilities Planning',
-                email: 'jchen@umich.edu',
-                phone: '(734) 764-1817',
-                url: 'https://procurement.umich.edu/example',
-                description: 'New STEM research and teaching facility'
+                type: 'airport',
+                title: 'SMForward Concourse B Expansion CMAR',
+                location: 'Sacramento International Airport (SMF), CA',
+                dueDate: '2026-02-15',
+                projectValue: '$500M+ Program',
+                size: '6 new gates + support',
+                contact: 'Sacramento Dept. of Airports',
+                email: null,
+                phone: null,
+                url: 'https://sacramento.aero/opportunities/bids_and_requests',
+                description: 'Terminal expansion and baggage system upgrades'
             },
             {
                 id: 3,
                 type: 'airport',
-                title: 'Concourse D Rehabilitation & Seismic Upgrade',
-                location: 'San Francisco International (SFO), CA',
-                dueDate: '2026-01-28',
-                projectValue: '$180M - $220M',
-                size: '280,000 SF',
-                contact: 'Michael Torres, Capital Projects',
-                email: 'michael.torres@flysfo.com',
-                phone: '(650) 821-5000',
-                url: 'https://sfgov.org/rfp/example',
-                description: 'Seismic retrofit and passenger experience improvements'
+                title: 'Sustainable Airport Master Plan Implementation',
+                location: 'Seattle-Tacoma International (SEA), WA',
+                dueDate: '2026-03-01',
+                projectValue: '$600M - $750M',
+                size: '19 new gates + terminal',
+                contact: 'Port of Seattle Aviation Capital',
+                email: null,
+                phone: '(206) 787-5388',
+                url: 'https://www.portseattle.org/plans/sustainable-airport-master-plan-samp',
+                description: 'Second terminal, ground transportation center, airfield extensions'
             },
+            // ACADEMIC
             {
                 id: 4,
                 type: 'academic',
-                title: 'Performing Arts Center',
-                location: 'Boston University, Boston, MA',
-                dueDate: '2026-03-10',
-                projectValue: '$150M - $180M',
-                size: '125,000 SF',
-                contact: 'Linda Vasquez, Project Manager',
-                email: 'lvasquez@bu.edu',
-                phone: '(617) 353-2000',
-                url: 'https://bu.edu/procurement/example',
-                description: 'Concert hall, theater, and rehearsal spaces'
+                title: 'Burke-Gilman Trail Transit Access Design-Build',
+                location: 'University of Washington, Seattle, WA',
+                dueDate: '2026-01-31',
+                projectValue: 'TBD',
+                size: 'Multi-modal pathway',
+                contact: 'UW Facilities Project Delivery',
+                email: null,
+                phone: null,
+                url: 'https://facilities.uw.edu/projects/business-opportunities/solicitations',
+                description: 'Progressive design-build for bike/pedestrian improvements'
             },
             {
                 id: 5,
-                type: 'airport',
-                title: 'General Aviation Terminal Replacement',
-                location: 'Westchester County Airport (HPN), NY',
-                dueDate: '2026-02-20',
-                projectValue: '$45M - $60M',
-                size: '55,000 SF',
-                contact: 'Peter Ciardullo, Aviation Director',
-                email: 'pciardullo@westchestergov.com',
-                phone: '(914) 995-4860',
-                url: 'https://westchestergov.com/rfp/example',
-                description: 'New GA terminal with modern passenger amenities'
+                type: 'academic',
+                title: 'Kent State Advanced Aviation Training Center',
+                location: 'Kent State University, OH',
+                dueDate: '2026-02-28',
+                projectValue: 'TBD',
+                size: 'New Construction',
+                contact: 'Office of the University Architect',
+                email: null,
+                phone: null,
+                url: 'https://www.kent.edu/universityarchitect/request-qualifications',
+                description: 'Design-build for aviation maintenance training facility'
             },
             {
                 id: 6,
                 type: 'academic',
-                title: 'Student Union Renovation & Addition',
-                location: 'Georgia Tech, Atlanta, GA',
-                dueDate: '2026-01-25',
-                projectValue: '$85M - $100M',
-                size: '200,000 SF',
-                contact: 'Amanda Wright, Capital Planning',
-                email: 'awright@gatech.edu',
-                phone: '(404) 894-2000',
-                url: 'https://gatech.edu/procurement/example',
-                description: 'Complete renovation with 50,000 SF addition'
+                title: 'UCLA Capital Projects - Various',
+                location: 'UCLA, Los Angeles, CA',
+                dueDate: '2026-02-01',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'UCLA Capital Programs',
+                email: null,
+                phone: null,
+                url: 'https://www.capitalprograms.ucla.edu/Contracts/RFQProjects',
+                description: 'Multiple design professional and consultant opportunities'
             },
+            // LABORATORY
             {
                 id: 7,
-                type: 'airport',
-                title: 'International Arrivals Facility Expansion',
-                location: 'Seattle-Tacoma International (SEA), WA',
-                dueDate: '2026-04-01',
-                projectValue: '$600M - $750M',
-                size: '450,000 SF',
-                contact: 'Jennifer Park, Aviation Capital',
-                email: 'jpark@portseattle.org',
-                phone: '(206) 787-5388',
-                url: 'https://portseattle.org/rfp/example',
-                description: 'Expanded CBP facilities and passenger processing'
+                type: 'laboratory',
+                title: 'NIH Biomedical Research Facilities (C06)',
+                location: 'Nationwide - NIH Grant Program',
+                dueDate: '2026-02-25',
+                projectValue: '$3M - $8M per award',
+                size: 'Core facilities & labs',
+                contact: 'NIH Office of Research Infrastructure',
+                email: 'drm@mail.nih.gov',
+                phone: null,
+                url: 'https://orip.nih.gov/construction-and-instruments/extramural-construction-programs/c06-program-frequently-asked-questions',
+                description: 'Laboratory modernization and research facility construction'
             },
             {
                 id: 8,
-                type: 'academic',
-                title: 'Medical Research Building',
-                location: 'Johns Hopkins University, Baltimore, MD',
-                dueDate: '2026-02-28',
-                projectValue: '$400M - $500M',
-                size: '320,000 SF',
-                contact: 'Dr. Robert Kim, Research Facilities',
-                email: 'rkim@jhu.edu',
-                phone: '(410) 516-8000',
-                url: 'https://jhu.edu/procurement/example',
-                description: 'BSL-3 capable biomedical research facility'
+                type: 'laboratory',
+                title: 'UWMC Energy Performance Upgrades',
+                location: 'UW Medical Center Montlake, Seattle, WA',
+                dueDate: '2026-01-28',
+                projectValue: 'TBD',
+                size: 'Medical campus',
+                contact: 'UW Facilities Project Delivery',
+                email: null,
+                phone: null,
+                url: 'https://facilities.uw.edu/projects/business-opportunities/solicitations',
+                description: 'A/E services for equipment upgrades and energy performance'
             },
             {
                 id: 9,
-                type: 'airport',
-                title: 'Runway 10L-28R Reconstruction',
-                location: 'Denver International Airport (DEN), CO',
-                dueDate: '2026-01-31',
-                projectValue: '$120M - $150M',
-                size: '16,000 LF',
-                contact: 'Mark Stevens, Engineering',
-                email: 'mstevens@flydenver.com',
-                phone: '(303) 342-2000',
-                url: 'https://flydenver.com/rfp/example',
-                description: 'Full runway reconstruction with taxiway improvements'
+                type: 'laboratory',
+                title: 'NIH Design Requirements Manual Projects',
+                location: 'NIH Campus, Bethesda, MD',
+                dueDate: '2026-03-15',
+                projectValue: 'Various',
+                size: 'Research facilities',
+                contact: 'NIH Division of Technical Resources',
+                email: 'drm@mail.nih.gov',
+                phone: null,
+                url: 'https://orf.od.nih.gov/TechnicalResources/Documents/DRM/DRMDeskGuide.pdf',
+                description: 'Lab design conforming to NIH Design Requirements Manual'
             },
+            // CIVIC
             {
                 id: 10,
+                type: 'civic',
+                title: 'Hartford Federal Courthouse',
+                location: 'Hartford, CT',
+                dueDate: '2026-03-01',
+                projectValue: '$157.6M',
+                size: 'New courthouse',
+                contact: 'GSA Design Excellence Program',
+                email: null,
+                phone: null,
+                url: 'https://www.gsa.gov/real-estate/design-and-construction/design-excellence-program',
+                description: 'New federal courthouse - FY 2026 Judiciary priority'
+            },
+            {
+                id: 11,
+                type: 'civic',
+                title: 'Chattanooga Federal Courthouse',
+                location: 'Chattanooga, TN',
+                dueDate: '2026-02-15',
+                projectValue: '$319.8M',
+                size: 'New courthouse',
+                contact: 'GSA Region 4',
+                email: null,
+                phone: null,
+                url: 'https://www.uscourts.gov/sites/default/files/document/section-14-courthouse-construction-fy2026.pdf',
+                description: 'New federal courthouse construction - partial funding received'
+            },
+            {
+                id: 12,
+                type: 'civic',
+                title: 'Tomochichi Federal Building Renovation',
+                location: 'Savannah, GA',
+                dueDate: '2026-06-01',
+                projectValue: '$90.9M',
+                size: 'Historic renovation',
+                contact: 'GSA Region 4',
+                email: null,
+                phone: null,
+                url: 'https://www.gsa.gov/real-estate/gsa-properties/ongoing-construction-projects/tomochichi-fb-and-savannah-us-courthouse',
+                description: 'Historic courthouse modernization - operational late 2026'
+            },
+            {
+                id: 13,
+                type: 'civic',
+                title: 'GSA Region 09 Construction IDIQ',
+                location: 'California, Nevada, Arizona',
+                dueDate: '2026-02-10',
+                projectValue: 'IDIQ Contract',
+                size: 'Various Federal Facilities',
+                contact: 'GSA Contracting',
+                email: null,
+                phone: null,
+                url: 'https://sam.gov/opp/637546e1b0f047a4b1dcd56aeddeac34/view',
+                description: 'Multiple award construction contract for federal buildings'
+            },
+            // LANDSCAPE
+            {
+                id: 14,
+                type: 'landscape',
+                title: 'West Neck Farm Historic Landscape Report',
+                location: 'Huntington, NY',
+                dueDate: '2026-01-09',
+                projectValue: 'TBD',
+                size: 'County Park',
+                contact: 'Suffolk County Parks',
+                email: null,
+                phone: null,
+                url: 'https://www.findrfp.com/landscaping-bids/landscape-architecture.aspx',
+                description: 'Historic landscape report and restoration plan'
+            },
+            {
+                id: 15,
+                type: 'landscape',
+                title: 'ASLA RFQs & Opportunities',
+                location: 'Nationwide',
+                dueDate: '2026-03-31',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'ASLA Professional Practice',
+                email: 'propractice@asla.org',
+                phone: null,
+                url: 'https://www.asla.org/land/LandArticle.aspx?id=64606',
+                description: 'Curated landscape architecture RFP listings'
+            },
+            {
+                id: 16,
+                type: 'landscape',
+                title: 'Planetizen Urban Planning RFP Board',
+                location: 'Nationwide',
+                dueDate: '2026-03-31',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'Planetizen',
+                email: null,
+                phone: null,
+                url: 'https://www.planetizen.com/rfps',
+                description: 'Urban planning, landscape, and public space RFPs'
+            },
+            {
+                id: 17,
+                type: 'landscape',
+                title: 'Hoboken Professional Services RFQ',
+                location: 'Hoboken, NJ',
+                dueDate: '2026-01-31',
+                projectValue: 'Annual contract',
+                size: 'Municipal projects',
+                contact: 'City of Hoboken',
+                email: null,
+                phone: null,
+                url: 'https://www.hobokennj.gov/bids-rfps',
+                description: 'Architect, Engineer, Landscape Architect services'
+            },
+            // MORE SOURCES
+            {
+                id: 18,
                 type: 'academic',
-                title: 'Library & Learning Commons',
-                location: 'Arizona State University, Tempe, AZ',
-                dueDate: '2026-03-25',
-                projectValue: '$175M - $200M',
-                size: '180,000 SF',
-                contact: 'Maria Gonzalez, Campus Planning',
-                email: 'mgonzalez@asu.edu',
-                phone: '(480) 965-9011',
-                url: 'https://asu.edu/procurement/example',
-                description: 'Next-generation library with collaborative spaces'
+                title: 'UC Berkeley Capital Projects',
+                location: 'UC Berkeley, CA',
+                dueDate: '2026-02-15',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'Capital Strategies',
+                email: null,
+                phone: null,
+                url: 'https://capitalstrategies.berkeley.edu/rfq',
+                description: 'Design, construction, and consultant services'
+            },
+            {
+                id: 19,
+                type: 'civic',
+                title: 'SAM.gov A/E Contract Opportunities',
+                location: 'Federal - Nationwide',
+                dueDate: '2026-03-31',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'SAM.gov',
+                email: null,
+                phone: null,
+                url: 'https://sam.gov/content/opportunities',
+                description: 'Search NAICS 541310 for A/E services opportunities'
+            },
+            {
+                id: 20,
+                type: 'laboratory',
+                title: 'Grants.gov Research Facility Funding',
+                location: 'Federal - Nationwide',
+                dueDate: '2026-03-31',
+                projectValue: 'Various',
+                size: 'Various',
+                contact: 'Grants.gov',
+                email: null,
+                phone: null,
+                url: 'https://grants.nih.gov/funding/nih-guide-for-grants-and-contracts',
+                description: 'NIH Guide for research facility grants and contracts'
             }
         ];
 
@@ -733,10 +939,18 @@
                             daysUntil < 0 ? 'Past due' :
                             `${daysUntil} days left`;
 
+            const typeLabels = {
+                airport: '✈ Aviation',
+                academic: '🎓 Academic',
+                laboratory: '🔬 Laboratory',
+                civic: '🏛 Civic',
+                landscape: '🌿 Landscape'
+            };
+
             return `
                 <a href="${lead.url}" target="_blank" rel="noopener noreferrer" class="lead-card ${lead.type}" data-type="${lead.type}">
                     <div class="card-header">
-                        <span class="card-type ${lead.type}">${lead.type === 'airport' ? '✈ Aviation' : '🎓 Academic'}</span>
+                        <span class="card-type ${lead.type}">${typeLabels[lead.type]}</span>
                         <div class="due-date">
                             <div class="due-label">Deadline</div>
                             <div class="due-value ${dueDateClass}">${formatDate(lead.dueDate)}</div>
@@ -810,11 +1024,17 @@
             
             const airportCount = sampleRFPs.filter(l => l.type === 'airport').length;
             const academicCount = sampleRFPs.filter(l => l.type === 'academic').length;
+            const laboratoryCount = sampleRFPs.filter(l => l.type === 'laboratory').length;
+            const civicCount = sampleRFPs.filter(l => l.type === 'civic').length;
+            const landscapeCount = sampleRFPs.filter(l => l.type === 'landscape').length;
             const urgentCount = sampleRFPs.filter(l => getDaysUntil(l.dueDate) <= 14).length;
             
             document.getElementById('total-leads').textContent = sampleRFPs.length;
             document.getElementById('airport-count').textContent = airportCount;
             document.getElementById('academic-count').textContent = academicCount;
+            document.getElementById('laboratory-count').textContent = laboratoryCount;
+            document.getElementById('civic-count').textContent = civicCount;
+            document.getElementById('landscape-count').textContent = landscapeCount;
             document.getElementById('urgent-count').textContent = urgentCount;
         }
 
